@@ -5,7 +5,8 @@ RUN apt update  \
 
 ADD src src
 
-RUN cd src \
+RUN dotnet --info \
+    &&  cd src \
     && git clone https://github.com/cake-build/cake.git \
     && cd cake \
     && latesttag=$(git describe --tags `git rev-list --tags --max-count=1`) \
