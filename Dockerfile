@@ -20,6 +20,9 @@ FROM microsoft/dotnet:2.1-sdk
 
 COPY --from=builder /app /cake
 RUN rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    && mkdir src
+
+WORKDIR /src
 
 ENV PATH "$PATH:/cake"
