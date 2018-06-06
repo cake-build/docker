@@ -1,7 +1,7 @@
 FROM microsoft/dotnet:2.1-sdk AS builder
 
 RUN apt-get update -qq \
-    && apt-get install -y git zip unzip dos2unix
+    && apt-get install -y git zip unzip dos2unix libunwind8
 
 ADD src src
 
@@ -17,6 +17,9 @@ RUN dotnet --info \
     && ./build.sh
 
 FROM microsoft/dotnet:2.1-sdk
+
+RUN apt-get update -qq \
+    && apt-get install -y libunwind8 
 
 COPY --from=builder /app /cake
 RUN rm -rf /var/lib/apt/lists/* \
