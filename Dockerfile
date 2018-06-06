@@ -29,3 +29,5 @@ RUN rm -rf /var/lib/apt/lists/* \
 WORKDIR /src
 
 ENV PATH "$PATH:/cake"
+
+RUN Cake --version
