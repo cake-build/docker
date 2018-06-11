@@ -22,12 +22,18 @@ RUN apt-get update -qq \
     && apt-get install -y libunwind8 
 
 COPY --from=builder /app /cake
+
+ADD src/cake.sh /cake/cake
+
 RUN rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
-    && mkdir src
+    && mkdir src \
+    && chmod 755 /cake/cake \
+    && sync
 
 WORKDIR /src
 
 ENV PATH "$PATH:/cake"
 
-RUN Cake --version
+RUN Cake --version \
+    && cake --version
