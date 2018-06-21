@@ -14,7 +14,8 @@ RUN dotnet --info \
     && git checkout -b ${latesttag} ${latesttag} \
     && cd .. \
     && dos2unix -q ./build.sh \
-    && ./build.sh
+    && ./build.sh \
+    && echo ${latesttag} > /app/cakeversion
 
 FROM microsoft/dotnet:2.1-sdk
 

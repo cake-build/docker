@@ -1,83 +1,108 @@
+#load "docker.cake"
 
-FilePath        dockerPath          = Context.Tools.Resolve("docker");
 string          target              = Argument("target", "Default");
 DirectoryPath   baseCakePath        = MakeAbsolute(Directory("./"));
 DirectoryPath   bitriseCakePath     = baseCakePath.Combine("Bitrise"),
-                bitriseMonoCakePath = baseCakePath.Combine("BitriseMono");
+                bitriseMonoCakePath = baseCakePath.Combine("BitriseMono"),
+                outputPath          = MakeAbsolute(Directory("./output"));
+FilePath        cakeVersionPath     = outputPath.CombineWithFilePath("cakeversion");
 
-Action<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> Cmd = (path, args) => {
-    var result = StartProcess(
-        path,
-        new ProcessSettings {
-            Arguments = args(new ProcessArgumentBuilder())
-        });
+var             images              =   new []{
+                                            new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" },
+                                            new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise" },
+                                            new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono" },
+                                        };
+string          cakeVersion         = null;
 
-    if(0 != result)
-    {
-        throw new Exception($"Failed to execute tool {path.GetFilename()} ({result})");
-    }
-};
-
-Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> Docker = (command, args) => {
-    Cmd(dockerPath, pab => args(pab.Append(command)));
-};
-
-
-public static void Pull (this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker, string image)
+Task("Clean")
+ .Does(()=>
 {
-    if (string.IsNullOrWhiteSpace(image))
-    {
-        throw new ArgumentNullException(nameof(image));
-    }
-    
-    docker("pull", args => args.AppendQuoted(image));
-}
-
-public static void Build(this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker, DirectoryPath dockerDirectoryPath)
-{
-    if (dockerDirectoryPath == null)
-    {
-        throw new ArgumentNullException(nameof(dockerDirectoryPath));
-    }
-
-    docker("build", args => args
-                        .Append("--no-cache")
-                        .AppendQuoted(dockerDirectoryPath.FullPath));
-}
+    CleanDirectory(outputPath);
+});
 
 Task("Pull-Base-Image")
+ .IsDependentOn("Clean")
  .Does(()=>
 {
     Docker.Pull("microsoft/dotnet:2.1-sdk");
 });
 
-Task("Build-Cake-Base")
+Task("Build-Images")
     .IsDependentOn("Pull-Base-Image")
-    .Does(()=>
+    .DoesForEach(
+        images,
+        image =>
 {
-    Docker.Build(baseCakePath);
+    Information("Building: {0}", image);
+    Docker.Build(image.Image, image.Tag, image.Path);
 });
 
-Task("Build-Cake-Bitrise")
-    .IsDependentOn("Build-Cake-Base")
-    .Does(()=>
+Task("Test-Images")
+    .IsDependentOn("Build-Images")
+    .DoesForEach(
+        images,
+        image =>
 {
-    Docker.Build(bitriseCakePath);
+    Information("Testing: {0}", image);
+    Docker.Run(
+        image.Image,
+        image.Tag,
+        new KeyValuePair<DirectoryPath,DirectoryPath>(outputPath, "/output"),
+        "/bin/bash",
+        "-c",
+        "\"cp /cake/cakeversion /output/;cake --version\""
+        );
 });
 
-Task("Build-Cake-Bitrise-Mono")
-    .IsDependentOn("Build-Cake-Bitrise")
-    .Does(()=>
+Task("Fetch-Version")
+    .IsDependentOn("Test-Images")
+ .Does(()=>
 {
-    Docker.Build(bitriseMonoCakePath);
+    cakeVersion = Context.FileSystem
+                    .GetFile(cakeVersionPath)
+                    .ReadLines(Encoding.UTF8)
+                    .FirstOrDefault()
+                    ?.Trim();
+
+    if (string.IsNullOrWhiteSpace(cakeVersion))
+    {
+        throw new Exception($"Failed to fetch version from {cakeVersionPath}");
+    }
+
+    Information("Version built: {0}", cakeVersion);
 });
 
 
+Task("Version-Tag-Images")
+    .IsDependentOn("Fetch-Version")
+    .DoesForEach(
+        images,
+        image =>
+{
+    var targetTag = $"{cakeVersion}-{image.Tag}";
+    
+    Information("Tagging: {0}", targetTag);
+
+    Docker.Tag(
+        image.Image,
+        image.Tag,
+        image.Image,
+        targetTag
+    );
+});
+
+Task("Push-Images")
+    .IsDependentOn("Version-Tag-Images")
+    .DoesForEach(
+        images,
+        image =>
+{
+    Information("Pushing: {0}", image);
+    Docker.Push(image.Image, $"{cakeVersion}-{image.Tag}");
+    Docker.Push(image.Image, image.Tag);
+});
 
 Task("Default")
-    .IsDependentOn("Pull-Base-Image")
-    .IsDependentOn("Build-Cake-Base")
-    .IsDependentOn("Build-Cake-Bitrise")
-    .IsDependentOn("Build-Cake-Bitrise-Mono");
+    .IsDependentOn("Push-Images");
 
 RunTarget(target);
