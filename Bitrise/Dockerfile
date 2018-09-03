@@ -9,7 +9,7 @@ ENV CI="true" \
     BITRISE_TMP_DIR="/bitrise/tmp" \
     PATH="/bitrise/go/bin/:$PATH:/usr/local/go/bin" \
     GOPATH="/bitrise/go" \
-    TOOL_VER_BITRISE_CLI="1.14.0" \
+    TOOL_VER_BITRISE_CLI="1.21.0" \
     TOOL_VER_GO="1.10"
 
 COPY ./ssh/config /root/.ssh/config
