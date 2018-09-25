@@ -20,7 +20,7 @@ RUN dotnet --info \
 FROM microsoft/dotnet:2.1-sdk
 
 RUN apt-get update -qq \
-    && apt-get install -y libunwind8 
+    && apt-get install -y libunwind8 dos2unix
 
 COPY --from=builder /app /cake
 
@@ -29,6 +29,7 @@ ADD src/cake.sh /cake/cake
 RUN rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
     && mkdir src \
+    && dos2unix -q /cake/cake \
     && chmod 755 /cake/cake \
     && sync
 

@@ -1,33 +1,46 @@
-FilePath        dockerPath          = Context.Tools.Resolve("docker");
+public static bool IsDockerExperimental = false;
 
-Action<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> Cmd = (path, args) => {
+FilePath        dockerPath          = Context.Tools.Resolve("docker")
+                                        ?? Context.Tools.Resolve("docker.exe")
+                                        ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
+
+Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Cmd = (path, args, redirectStandardOutput) => {
     var result = StartProcess(
         path,
         new ProcessSettings {
-            Arguments = args(new ProcessArgumentBuilder())
-        });
+            Arguments = args(new ProcessArgumentBuilder()),
+            RedirectStandardOutput = redirectStandardOutput
+        },
+        out IEnumerable<string> redirectedStandardOutput);
+
+    var output = string.Join(System.Environment.NewLine, redirectedStandardOutput ?? Enumerable.Empty<string>());
 
     if(0 != result)
     {
         throw new Exception($"Failed to execute tool {path.GetFilename()} ({result})");
     }
+
+    return output;
 };
 
-Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> Docker = (command, args) => {
-    Cmd(dockerPath, pab => args(pab.Append(command)));
-};
+Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Docker =
+    (command, args, redirectStandardOutput) =>
+        Cmd(dockerPath, pab => args(pab.Append(command)), redirectStandardOutput);
 
-public static void Pull (this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker, string image)
+
+IsDockerExperimental = Docker("version", arg=>arg.Append("-f {{.Server.Experimental}}"), true) == "true";
+
+public static void Pull (this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker, string image)
 {
     if (string.IsNullOrWhiteSpace(image))
     {
         throw new ArgumentNullException(nameof(image));
     }
     
-    docker("pull", args => args.AppendQuoted(image));
+    docker("pull", args => args.AppendQuoted(image), false);
 }
 
-public static void Push (this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker, string image, string tag)
+public static void Push (this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker, string image, string tag)
 {
     if (string.IsNullOrWhiteSpace(image))
     {
@@ -39,13 +52,11 @@ public static void Push (this Action<string, Func<ProcessArgumentBuilder, Proces
         throw new ArgumentNullException(nameof(tag));
     }
     
-    docker("push", args => args.AppendQuoted($"{image}:{tag}"));
+    docker("push", args => args.AppendQuoted($"{image}:{tag}"), false);
 }
 
-
-
 public static void Tag (
-    this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker,
+    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
     string sourceImage,
     string sourceTag,
     string targetImage,
@@ -71,11 +82,12 @@ public static void Tag (
         throw new ArgumentNullException(nameof(targetTag));
     }
     
-    docker("tag", args => args.AppendQuoted($"{sourceImage}:{sourceTag}").AppendQuoted($"{targetImage}:{targetTag}"));
+    docker("tag", args => args.AppendQuoted($"{sourceImage}:{sourceTag}").AppendQuoted($"{targetImage}:{targetTag}"), false);
 }
 
-public static void Run (
-    this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker, 
+public static string Run (
+    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker, 
+    bool redirectStandardOutput,
     string image, 
     string tag,
     KeyValuePair<DirectoryPath, DirectoryPath>? volume,
@@ -96,12 +108,13 @@ public static void Run (
         throw new ArgumentNullException(nameof(commands));
     }
     
-    docker("run", args =>
+    return docker("run", args =>
     {
         if (volume != null)
         {
             args.AppendSwitchQuoted("--volume", "=", $"{volume?.Key}:{volume?.Value}");
         }
+
         args.Append("--rm")
             .AppendQuoted($"{image}:{tag}");
 
@@ -111,11 +124,11 @@ public static void Run (
         }
 
         return args;
-    });
+    }, redirectStandardOutput);
 }
 
 public static void Build(
-    this Action<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>> docker,
+    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
     string image,
     string tag,
     DirectoryPath dockerDirectoryPath)
@@ -135,11 +148,15 @@ public static void Build(
         throw new ArgumentNullException(nameof(dockerDirectoryPath));
     }
 
-    docker("build", args => args
+    Func<ProcessArgumentBuilder, ProcessArgumentBuilder> experimentalArgs = IsDockerExperimental
+                                                                                ? args=> args.Append("--squash")
+                                                                                : new Func<ProcessArgumentBuilder, ProcessArgumentBuilder>(args=> args);
+
+    docker("build", args => experimentalArgs(args)
                         .Append("--no-cache")
                         .Append("--rm")
                         .Append("--quiet")
-                        .Append("--squash")
                         .AppendSwitchQuoted("--tag","=", $"{image}:{tag}")
-                        .AppendQuoted(dockerDirectoryPath.FullPath));
+                        .AppendQuoted(dockerDirectoryPath.FullPath),
+                        false);
 }

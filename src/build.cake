@@ -15,7 +15,7 @@ Task("Publish")
             OutputDirectory = "/app",
             ArgumentCustomization = arg => arg
                 .Append("--self-contained")
-                .Append("--source=\"https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;https://api.nuget.org/v3/index.json\"")
+                .Append("--source=\"https://api.nuget.org/v3/index.json\"")
         }
         );
 });

@@ -6,12 +6,19 @@ DirectoryPath   bitriseCakePath     = baseCakePath.Combine("Bitrise"),
                 bitriseMonoCakePath = baseCakePath.Combine("BitriseMono"),
                 outputPath          = MakeAbsolute(Directory("./output"));
 FilePath        cakeVersionPath     = outputPath.CombineWithFilePath("cakeversion");
+string          tagFilter           = Argument("tagfilter", "").ToLower();
 
 var             images              =   new []{
                                             new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" },
                                             new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise" },
                                             new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono" },
                                         };
+if (!string.IsNullOrWhiteSpace(tagFilter))
+{
+    images = images
+                .Where(image=>tagFilter ==image.Tag)
+                .ToArray();
+}
 string          cakeVersion         = null;
 
 Task("Clean")
@@ -24,7 +31,22 @@ Task("Pull-Base-Image")
  .IsDependentOn("Clean")
  .Does(()=>
 {
-    Docker.Pull("microsoft/dotnet:2.1-sdk");
+    string baseTag;
+    switch(tagFilter)
+    {
+        case "2.1-sdk-bitrise":
+            baseTag = "cakebuild/cake:2.1-sdk";
+            break;
+
+        case "2.1-sdk-bitrise-mono":
+            baseTag = "cakebuild/cake:2.1-sdk-bitrise";
+            break;
+
+        default:
+            baseTag = "microsoft/dotnet:2.1-sdk";
+            break;
+    }
+    Docker.Pull(baseTag);
 });
 
 Task("Build-Images")
@@ -44,14 +66,25 @@ Task("Test-Images")
         image =>
 {
     Information("Testing: {0}", image);
-    Docker.Run(
+    var testResult = Docker.Run(
+        true,
         image.Image,
         image.Tag,
-        new KeyValuePair<DirectoryPath,DirectoryPath>(outputPath, "/output"),
+        null,
         "/bin/bash",
         "-c",
-        "\"cp /cake/cakeversion /output/;cake --version\""
+        "\"cat /cake/cakeversion;cake --version\""
         );
+    Information(testResult);
+    using (var file =Context.FileSystem
+                        .GetFile(cakeVersionPath)
+                        .OpenWrite())
+    {
+        using(var writer = new StreamWriter(file, Encoding.UTF8))
+        {
+            writer.WriteLine(testResult);
+        }
+    }
 });
 
 Task("Fetch-Version")
