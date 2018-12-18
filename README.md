@@ -8,6 +8,7 @@ Cake official Docker files with Cake pre-installed
 |---------------------------------------|---------------------------------------------------------------------------------------------------|---|
 |cakebuild/cake:2.1-sdk                 | Image with latest released Cake, based on microsoft/dotnet:2.1-sdk                                | [![2.1-sdk Size](https://img.shields.io/microbadger/image-size/cakebuild/cake/2.1-sdk.svg)](https://hub.docker.com/r/cakebuild/cake/tags/)                            |
 |cakebuild/cake:2.1-sdk-bitrise         | Image with latest released Cake and Bitrise CLI,  based on cakebuild/cake:2.1-sdk                 | [![2.1-sdk-bitrise Size](https://img.shields.io/microbadger/image-size/cakebuild/cake/2.1-sdk-bitrise.svg)](https://hub.docker.com/r/cakebuild/cake/tags/)            |
+|cakebuild/cake:2.1-sdk-mono            | Image with latest released Cake and Mono,  based on cakebuild/cake:2.1-sdk                        | [![2.1-sdk-mono Size](https://img.shields.io/microbadger/image-size/cakebuild/cake/2.1-sdk-mono.svg)](https://hub.docker.com/r/cakebuild/cake/tags/)                  |
 |cakebuild/cake:2.1-sdk-bitrise-mono    | Image with latest released Cake, Bitrise CLI and Mono,  based on cakebuild/cake:2.1-sdk-bitrise   | [![2.1-sdk-bitrise-mono size](https://img.shields.io/microbadger/image-size/cakebuild/cake/2.1-sdk-bitrise-mono.svg)](https://hub.docker.com/r/cakebuild/cake/tags/)  |
 
 ## Example usage

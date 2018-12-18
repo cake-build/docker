@@ -1,4 +1,4 @@
-FROM cakebuild/cake:2.1-sdk-bitrise
+FROM cakebuild/cake:2.1-sdk
 
 RUN apt-get update -qq \
     && apt-get install -y apt-transport-https \

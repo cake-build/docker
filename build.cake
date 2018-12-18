@@ -4,6 +4,7 @@ string          target              = Argument("target", "Default");
 DirectoryPath   baseCakePath        = MakeAbsolute(Directory("./"));
 DirectoryPath   bitriseCakePath     = baseCakePath.Combine("Bitrise"),
                 bitriseMonoCakePath = baseCakePath.Combine("BitriseMono"),
+                monoCakePath        = baseCakePath.Combine("Mono"),
                 outputPath          = MakeAbsolute(Directory("./output"));
 FilePath        cakeVersionPath     = outputPath.CombineWithFilePath("cakeversion");
 string          tagFilter           = Argument("tagfilter", "").ToLower();
@@ -12,6 +13,7 @@ var             images              =   new []{
                                             new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" },
                                             new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise" },
                                             new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono" },
+                                            new { Path = monoCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk-mono" },
                                         };
 if (!string.IsNullOrWhiteSpace(tagFilter))
 {
@@ -40,6 +42,10 @@ Task("Pull-Base-Image")
 
         case "2.1-sdk-bitrise-mono":
             baseTag = "cakebuild/cake:2.1-sdk-bitrise";
+            break;
+
+        case "2.1-sdk-mono":
+            baseTag = "cakebuild/cake:2.1-sdk";
             break;
 
         default:
