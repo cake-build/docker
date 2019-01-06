@@ -31,6 +31,7 @@ RUN rm -rf /var/lib/apt/lists/* \
     && mkdir src \
     && dos2unix -q /cake/cake \
     && chmod 755 /cake/cake \
+    && chmod 755 /cake/Cake \
     && sync
 
 WORKDIR /src
