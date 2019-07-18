@@ -5,15 +5,17 @@ DirectoryPath   baseCakePath        = MakeAbsolute(Directory("./"));
 DirectoryPath   bitriseCakePath     = baseCakePath.Combine("Bitrise"),
                 bitriseMonoCakePath = baseCakePath.Combine("BitriseMono"),
                 monoCakePath        = baseCakePath.Combine("Mono"),
+                windowsNanoPath     = baseCakePath.Combine("Windows").Combine("Nano"),
                 outputPath          = MakeAbsolute(Directory("./output"));
 FilePath        cakeVersionPath     = outputPath.CombineWithFilePath("cakeversion");
 string          tagFilter           = Argument("tagfilter", "").ToLower();
 
 var             images              =   new []{
-                                            new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" },
-                                            new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise" },
-                                            new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono" },
-                                            new { Path = monoCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk-mono" },
+                                            new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" , Windows = false },
+                                            new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise", Windows = false },
+                                            new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono", Windows = false },
+                                            new { Path = monoCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk-mono", Windows = false },
+                                            new { Path = windowsNanoPath,       Image = "cakebuild/cake", Tag = "2.1-sdk-nanoserver-1803", Windows = true },
                                         };
 if (!string.IsNullOrWhiteSpace(tagFilter))
 {
@@ -48,6 +50,10 @@ Task("Pull-Base-Image")
             baseTag = "cakebuild/cake:2.1-sdk";
             break;
 
+        case "2.1-sdk-nanoserver-1803":
+            baseTag = "microsoft/dotnet:2.1-sdk-nanoserver-1803";
+            break;
+
         default:
             baseTag = "microsoft/dotnet:2.1-sdk";
             break;
@@ -72,15 +78,25 @@ Task("Test-Images")
         image =>
 {
     Information("Testing: {0}", image);
-    var testResult = Docker.Run(
-        true,
-        image.Image,
-        image.Tag,
-        null,
-        "/bin/bash",
-        "-c",
-        "\"cat /cake/cakeversion;cake --version\""
-        );
+    var testResult = image.Windows
+        ? Docker.Run(
+                true,
+                image.Image,
+                image.Tag,
+                null,
+                "C:\\WINDOWS\\system32\\cmd.exe",
+                "/c",
+                "\"cake --version\""
+            )
+        : Docker.Run(
+                true,
+                image.Image,
+                image.Tag,
+                null,
+                "/bin/bash",
+                "-c",
+                "\"cat /cake/cakeversion;cake --version\""
+            );
     Information(testResult);
     using (var file =Context.FileSystem
                         .GetFile(cakeVersionPath)
@@ -119,7 +135,7 @@ Task("Version-Tag-Images")
         image =>
 {
     var targetTag = $"{cakeVersion}-{image.Tag}";
-    
+
     Information("Tagging: {0}", targetTag);
 
     Docker.Tag(
