@@ -10,7 +10,7 @@ Task("Publish")
         "cake/src/Cake/Cake.csproj",
         new DotNetCorePublishSettings {
             Configuration = configuration,
-            Framework = "netcoreapp2.0",
+            Framework = "netcoreapp3.0",
             Runtime = runtime,
             OutputDirectory = "/app",
             ArgumentCustomization = arg => arg
