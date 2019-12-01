@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1-sdk-nanoserver-1803
+FROM microsoft/dotnet:3.0-sdk-nanoserver-1803
 
 ADD cake.cmd c:/cake/cake.cmd
 

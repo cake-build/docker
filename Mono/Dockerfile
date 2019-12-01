@@ -1,4 +1,4 @@
-FROM cakebuild/cake:2.1-sdk
+FROM cakebuild/cake:3.0-sdk
 
 RUN apt-get update -qq \
     && apt-get install -y apt-transport-https \

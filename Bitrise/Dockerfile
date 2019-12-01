@@ -1,4 +1,4 @@
-FROM cakebuild/cake:2.1-sdk
+FROM cakebuild/cake:3.0-sdk
 
 ENV CI="true" \
     BITRISE_SOURCE_DIR="/bitrise/src" \

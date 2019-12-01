@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1-sdk AS builder
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0 AS builder
 
 RUN apt-get update -qq \
     && apt-get install -y git zip unzip dos2unix libunwind8
@@ -17,7 +17,7 @@ RUN dotnet --info \
     && ./build.sh \
     && echo ${latesttag} > /app/cakeversion
 
-FROM microsoft/dotnet:2.1-sdk
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0
 
 RUN apt-get update -qq \
     && apt-get install -y libunwind8 dos2unix

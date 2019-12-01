@@ -11,11 +11,11 @@ FilePath        cakeVersionPath     = outputPath.CombineWithFilePath("cakeversio
 string          tagFilter           = Argument("tagfilter", "").ToLower();
 
 var             images              =   new []{
-                                            new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" , Windows = false },
-                                            new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise", Windows = false },
-                                            new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono", Windows = false },
-                                            new { Path = monoCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk-mono", Windows = false },
-                                            new { Path = windowsNanoPath,       Image = "cakebuild/cake", Tag = "2.1-sdk-nanoserver-1803", Windows = true },
+                                            new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "3.0-sdk" , Windows = false },
+                                            new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "3.0-sdk-bitrise", Windows = false },
+                                            new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "3.0-sdk-bitrise-mono", Windows = false },
+                                            new { Path = monoCakePath,          Image = "cakebuild/cake", Tag = "3.0-sdk-mono", Windows = false },
+                                            new { Path = windowsNanoPath,       Image = "cakebuild/cake", Tag = "3.0-sdk-nanoserver-1803", Windows = true },
                                         };
 if (!string.IsNullOrWhiteSpace(tagFilter))
 {
@@ -38,24 +38,24 @@ Task("Pull-Base-Image")
     string baseTag;
     switch(tagFilter)
     {
-        case "2.1-sdk-bitrise":
-            baseTag = "cakebuild/cake:2.1-sdk";
+        case "3.0-sdk-bitrise":
+            baseTag = "cakebuild/cake:3.0-sdk";
             break;
 
-        case "2.1-sdk-bitrise-mono":
-            baseTag = "cakebuild/cake:2.1-sdk-bitrise";
+        case "3.0-sdk-bitrise-mono":
+            baseTag = "cakebuild/cake:3.0-sdk-bitrise";
             break;
 
-        case "2.1-sdk-mono":
-            baseTag = "cakebuild/cake:2.1-sdk";
+        case "3.0-sdk-mono":
+            baseTag = "cakebuild/cake:3.0-sdk";
             break;
 
-        case "2.1-sdk-nanoserver-1803":
-            baseTag = "microsoft/dotnet:2.1-sdk-nanoserver-1803";
+        case "3.0-sdk-nanoserver-1803":
+            baseTag = "microsoft/dotnet:3.0-sdk-nanoserver-1803";
             break;
 
         default:
-            baseTag = "microsoft/dotnet:2.1-sdk";
+            baseTag = "microsoft/dotnet:3.0-sdk";
             break;
     }
     Docker.Pull(baseTag);
