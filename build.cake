@@ -1,163 +1,191 @@
-#load "docker.cake"
+#addin "nuget:?package=System.Text.Json&version=5.0.0&loaddependencies=true"
+#load "build/models/docker.cake"
+#load "build/models/nuget.cake"
+#load "build/models/builddata.cake"
+#load "build/helpers/httpclient.cake"
+#load "build/helpers/docker.cake"
 
-string          target              = Argument("target", "Default");
-DirectoryPath   baseCakePath        = MakeAbsolute(Directory("./"));
-DirectoryPath   bitriseCakePath     = baseCakePath.Combine("Bitrise"),
-                bitriseMonoCakePath = baseCakePath.Combine("BitriseMono"),
-                monoCakePath        = baseCakePath.Combine("Mono"),
-                windowsNanoPath     = baseCakePath.Combine("Windows").Combine("Nano"),
-                outputPath          = MakeAbsolute(Directory("./output"));
-FilePath        cakeVersionPath     = outputPath.CombineWithFilePath("cakeversion");
-string          tagFilter           = Argument("tagfilter", "").ToLower();
-
-var             images              =   new []{
-                                            new { Path = baseCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk" , Windows = false },
-                                            new { Path = bitriseCakePath,       Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise", Windows = false },
-                                            new { Path = bitriseMonoCakePath,   Image = "cakebuild/cake", Tag = "2.1-sdk-bitrise-mono", Windows = false },
-                                            new { Path = monoCakePath,          Image = "cakebuild/cake", Tag = "2.1-sdk-mono", Windows = false },
-                                            new { Path = windowsNanoPath,       Image = "cakebuild/cake", Tag = "2.1-sdk-nanoserver-1803", Windows = true },
-                                        };
-if (!string.IsNullOrWhiteSpace(tagFilter))
+if (BuildSystem.GitHubActions.IsRunningOnGitHubActions)
 {
-    images = images
-                .Where(image=>tagFilter ==image.Tag)
-                .ToArray();
+    TaskSetup(context=> System.Console.WriteLine($"::group::{context.Task.Name.Quote()}"));
+    TaskTeardown(context=>System.Console.WriteLine("::endgroup::"));
 }
-string          cakeVersion         = null;
 
-Task("Clean")
- .Does(()=>
-{
-    CleanDirectory(outputPath);
-});
+Setup<BuildData>(
+    setupContext => new(
+        new HttpClient(),
+        new Repository[] {
+            new ("dotnet/sdk", "sdk-") //,
+            //new ("dotnet/core/sdk", "sdk-")
+        },
+        "https://api.nuget.org/v3/index.json",
+        StringComparer.OrdinalIgnoreCase.Equals(
+            bool.TrueString,
+            Argument("remove-base-image", bool.FalseString)
+        ),
+        StringComparer.OrdinalIgnoreCase.Equals(
+            "Publish",
+            setupContext.TargetTask.Name
+        )
+    )
+);
 
-Task("Pull-Base-Image")
- .IsDependentOn("Clean")
- .Does(()=>
-{
-    string baseTag;
-    switch(tagFilter)
-    {
-        case "2.1-sdk-bitrise":
-            baseTag = "cakebuild/cake:2.1-sdk";
-            break;
+Task("Get-Base-Image-Tags")
+    .DoesForEach<BuildData, Repository>(
+        (data, context) => data.DockerRepos,
+        (data, repository, context) => {
+            var repositoryTags = data
+                                .Client
+                                .GetAsync<RepositoryTags>(repository.DockerRepoTagUri)
+                                .ConfigureAwait(false)
+                                .GetAwaiter()
+                                .GetResult();
 
-        case "2.1-sdk-bitrise-mono":
-            baseTag = "cakebuild/cake:2.1-sdk-bitrise";
-            break;
+            data.BaseImages.AddRange(
+                from tag in repositoryTags.Tags
+                where tag switch {
+                                        "2.1" => context.IsRunningOnUnix(),
+                                        "3.1" => context.IsRunningOnUnix(),
+                                        "5.0" => context.IsRunningOnUnix(),
+                                        string =>   (
+                                                        tag.StartsWith("2.1-")
+                                                        || tag.StartsWith("3.1-")
+                                                        || tag.StartsWith("5.0-")
+                                                    )
+                                                    && (
+                                                        (
+                                                            tag.Contains("windows")
+                                                            || tag.Contains("nanoserver")
+                                                        ) == context.IsRunningOnWindows()
+                                                    )
+                                                    && !tag.Contains("-arm")
 
-        case "2.1-sdk-mono":
-            baseTag = "cakebuild/cake:2.1-sdk";
-            break;
+                                                    // Investigate fails on GitHub actions,
+                                                    // move excluded images to command line parameter
+                                                    && tag != "5.0-alpine3.11"
 
-        case "2.1-sdk-nanoserver-1803":
-            baseTag = "microsoft/dotnet:2.1-sdk-nanoserver-1803";
-            break;
-
-        default:
-            baseTag = "microsoft/dotnet:2.1-sdk";
-            break;
-    }
-    Docker.Pull(baseTag);
-});
-
-Task("Build-Images")
-    .IsDependentOn("Pull-Base-Image")
-    .DoesForEach(
-        images,
-        image =>
-{
-    Information("Building: {0}", image);
-    Docker.Build(image.Image, image.Tag, image.Path);
-});
-
-Task("Test-Images")
-    .IsDependentOn("Build-Images")
-    .DoesForEach(
-        images,
-        image =>
-{
-    Information("Testing: {0}", image);
-    var testResult = image.Windows
-        ? Docker.Run(
-                true,
-                image.Image,
-                image.Tag,
-                null,
-                "C:\\WINDOWS\\system32\\cmd.exe",
-                "/c",
-                "\"cake --version\""
-            )
-        : Docker.Run(
-                true,
-                image.Image,
-                image.Tag,
-                null,
-                "/bin/bash",
-                "-c",
-                "\"cat /cake/cakeversion;cake --version\""
+                                                    // Seems to be missing RTM .NET 5
+                                                    && tag != "5.0-nanoserver-1903",
+                                        _=> false
+                    }
+                select new BaseImage(
+                    repository.Name,
+                    tag,
+                    repository.CakePrefix
+                )
             );
-    Information(testResult);
-    using (var file =Context.FileSystem
-                        .GetFile(cakeVersionPath)
-                        .OpenWrite())
-    {
-        using(var writer = new StreamWriter(file, Encoding.UTF8))
-        {
-            writer.WriteLine(testResult);
+
+            foreach(var baseImage in data.BaseImages)
+            {
+                context.Information("Image: {0}", baseImage.Image);
+            }
         }
-    }
-});
-
-Task("Fetch-Version")
-    .IsDependentOn("Test-Images")
- .Does(()=>
-{
-    cakeVersion = Context.FileSystem
-                    .GetFile(cakeVersionPath)
-                    .ReadLines(Encoding.UTF8)
-                    .FirstOrDefault()
-                    ?.Trim();
-
-    if (string.IsNullOrWhiteSpace(cakeVersion))
-    {
-        throw new Exception($"Failed to fetch version from {cakeVersionPath}");
-    }
-
-    Information("Version built: {0}", cakeVersion);
-});
-
-
-Task("Version-Tag-Images")
-    .IsDependentOn("Fetch-Version")
-    .DoesForEach(
-        images,
-        image =>
-{
-    var targetTag = $"{cakeVersion}-{image.Tag}";
-
-    Information("Tagging: {0}", targetTag);
-
-    Docker.Tag(
-        image.Image,
-        image.Tag,
-        image.Image,
-        targetTag
     );
-});
 
-Task("Push-Images")
-    .IsDependentOn("Version-Tag-Images")
-    .DoesForEach(
-        images,
-        image =>
-{
-    Information("Pushing: {0}", image);
-    Docker.Push(image.Image, $"{cakeVersion}-{image.Tag}");
-    Docker.Push(image.Image, image.Tag);
-});
+Task("Get-Cake-Versions")
+    .Does<BuildData>(
+        async (context, data) => {
+            var nuGetIndex = await data.Client.GetAsync<NuGetIndex>(data.NuGetSource);
+            var cakeBaseUrl = string.Concat(
+                                    nuGetIndex
+                                        ?.Resources
+                                        ?.Where(type => type.Type is { Length: 20 }
+                                                        && type.Type == "RegistrationsBaseUrl"
+                                                        && type.Id is { Length: > 8 }
+                                                        && type.Id.StartsWith("https://"))
+                                        .Select(url => url.Id)
+                                        .FirstOrDefault()
+                                        ?? throw new Exception($"Failed to fetch RegistrationsBaseUrl from {data.NuGetSource}."),
+                                    "cake.tool/index.json"
+                                );
+
+            var cakeNuGetIndex = await data.Client.GetAsync<NuGetContainer<NuGetContainer<NuGetPackageEntry>>>(cakeBaseUrl);
+
+            data.CakeVersions.AddRange(
+                (
+                    from item in cakeNuGetIndex.Items
+                    from version in item.Items
+                    orderby version.CommitTimeStamp descending
+                    select version.CatalogEntry.Version
+                ).Take(5)
+            );
+            foreach(var version in data.CakeVersions)
+            {
+                context.Information(version);;
+            }
+        }
+    );
+
+Task("Docker-Build-BaseImages")
+    .IsDependentOn("Get-Base-Image-Tags")
+    .IsDependentOn("Get-Cake-Versions")
+    .DoesForEach<BuildData, BaseImage>(
+        (data, context) => data.BaseImages,
+        (data, baseImage, context) => {
+            ICollection<(string cakeVersion, string tag)> versionTags = data
+                                                                            .CakeVersions
+                                                                            .Select(
+                                                                                cakeVersion =>
+                                                                                (
+                                                                                    cakeVersion,
+                                                                                    string.Concat(
+                                                                                            baseImage.CakeImage,
+                                                                                            "-v",
+                                                                                            cakeVersion
+                                                                                        )
+                                                                                )
+                                                                            )
+                                                                            .ToArray();
+
+            context.Information("Pulling base image {0}...", baseImage.Image);
+            Docker.Pull(baseImage.Image);
+            context.Information("Pulled image {0}.", baseImage.Image);
+
+            foreach(var (cakeVersion, tag) in versionTags)
+            {
+                context.Information("Building image {0} based on {1}...", tag, baseImage.Image);
+                Docker.Build(
+                    tag,
+                    (
+                        context.IsRunningOnWindows()
+                            ? "./src/Windows.Dockerfile"
+                            : "./src/Linux.Dockerfile"
+                    ),
+                    new BuildArg[] {
+                        new("BASE_IMAGE", baseImage.Image),
+                        new("CAKE_VERSION", cakeVersion)
+                    });
+                context.Information("Built image {0} based on {1}.", tag, baseImage.Image);
+
+                if (data.ShouldPublish)
+                {
+                    context.Information("Publishing image {0}...", tag);
+                    Docker.Push(tag);
+                    context.Information("Published image {0}.", tag);
+                }
+            }
+
+            foreach(var (_, tag) in versionTags)
+            {
+                context.Information("Removing image {0}...", tag);
+                Docker.ImageRemove(tag);
+                context.Information("Removed image {0}.", tag);
+            }
+
+            if (data.RemoveBaseImage)
+            {
+                context.Information("Removing base image {0}...", baseImage.Image);
+                Docker.ImageRemove(baseImage.Image);
+                context.Information("Removed base image {0}.", baseImage.Image);
+            }
+        }
+    );
+
 
 Task("Default")
-    .IsDependentOn("Push-Images");
+    .IsDependentOn("Docker-Build-BaseImages");
 
-RunTarget(target);
+Task("Publish")
+    .IsDependentOn("Docker-Build-BaseImages");
+
+RunTarget(Argument("target", "Default"));
