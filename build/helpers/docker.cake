@@ -4,7 +4,7 @@ FilePath        dockerPath          =  Context.Tools.Resolve(IsRunningOnWindows(
                                         ?? Context.Tools.Resolve(IsRunningOnWindows() ? "docker" : "docker.exe")
                                         ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
 
-var DockerToolTimeout = (int)TimeSpan.FromMinutes(4).TotalMilliseconds;
+var DockerToolTimeout = (int)TimeSpan.FromMinutes(8).TotalMilliseconds;
 
 Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Cmd = (path, args, redirectStandardOutput) => {
     var result = StartProcess(
