@@ -1,20 +1,29 @@
+#addin nuget:?package=Polly&version=7.2.1
+using Polly;
 public static bool IsDockerExperimental = false;
+public static Policy DockerRetryPolicy { get; } = Policy
+                                                    .Handle<Exception>()
+                                                    .WaitAndRetry(10,
+                                                        retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
 FilePath        dockerPath          =  Context.Tools.Resolve(IsRunningOnWindows() ? "docker.exe" : "docker")
                                         ?? Context.Tools.Resolve(IsRunningOnWindows() ? "docker" : "docker.exe")
                                         ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
 
-var DockerToolTimeout = (int)TimeSpan.FromMinutes(8).TotalMilliseconds;
+var DockerToolTimeout = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
 
 Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Cmd = (path, args, redirectStandardOutput) => {
-    var result = StartProcess(
-        path,
-        new ProcessSettings {
-            Arguments = args(new ProcessArgumentBuilder()),
-            RedirectStandardOutput = redirectStandardOutput,
-            Timeout  = DockerToolTimeout
-        },
-        out IEnumerable<string> redirectedStandardOutput);
+    IEnumerable<string> redirectedStandardOutput = null;
+    var result = DockerRetryPolicy.Execute(
+        () => StartProcess(
+            path,
+            new ProcessSettings {
+                Arguments = args(new ProcessArgumentBuilder()),
+                RedirectStandardOutput = redirectStandardOutput,
+                Timeout  = DockerToolTimeout
+            },
+            out redirectedStandardOutput)
+    );
 
     var output = string.Join(System.Environment.NewLine, redirectedStandardOutput ?? Enumerable.Empty<string>());
 
