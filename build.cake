@@ -157,11 +157,15 @@ Task("Docker-Build-BaseImages")
                             new("CAKE_VERSION", cakeVersionTag.cakeVersion)
                         });
                     context.Information("Built image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
+                }
+            );
 
-                    context.Information("Testing image {0} based on {1}...", cakeVersionTag.tag, baseImage.Image);
+            foreach (var (version, tag) in versionTags)
+            {
+                    context.Information("Testing image {0} based on {1}...", tag, baseImage.Image);
                     var builtVersion = Docker.Run(
                         true,
-                        cakeVersionTag.tag,
+                        tag,
                         null,
                         "dotnet-cake",
                         "--version");
@@ -169,23 +173,28 @@ Task("Docker-Build-BaseImages")
                     context.Information(
                         "Built version {0}, expected version {1}.",
                         builtVersion,
-                        cakeVersionTag.cakeVersion);
+                        version);
 
-                    if (cakeVersionTag.cakeVersion != builtVersion)
+                    if (version != builtVersion)
                     {
-                        throw new Exception($"Built version {builtVersion}, expected version {cakeVersionTag.cakeVersion}");
+                        throw new Exception($"Built version {builtVersion}, expected version {version}");
                     }
 
-                    context.Information("Tested image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
+                    context.Information("Tested image {0} based on {1}.", tag, baseImage.Image);
 
-                    if (data.ShouldPublish)
-                    {
+            }
+
+            if (data.ShouldPublish)
+            {
+                Parallel.ForEach(
+                    versionTags,
+                    cakeVersionTag => {
+
                         context.Information("Publishing image {0}...", cakeVersionTag.tag);
                         Docker.Push(cakeVersionTag.tag);
                         context.Information("Published image {0}.", cakeVersionTag.tag);
-                    }
-                }
-            );
+                });
+            }
 
             foreach(var (_, tag) in versionTags)
             {
