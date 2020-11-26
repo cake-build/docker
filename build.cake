@@ -158,6 +158,26 @@ Task("Docker-Build-BaseImages")
                         });
                     context.Information("Built image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
 
+                    context.Information("Testing image {0} based on {1}...", cakeVersionTag.tag, baseImage.Image);
+                    var builtVersion = Docker.Run(
+                        true,
+                        cakeVersionTag.tag,
+                        null,
+                        "dotnet-cake",
+                        "--version");
+
+                    context.Information(
+                        "Built version {0}, expected version {1}.",
+                        builtVersion,
+                        cakeVersionTag.cakeVersion);
+
+                    if (cakeVersionTag.cakeVersion != builtVersion)
+                    {
+                        throw new Exception($"Built version {builtVersion}, expected version {cakeVersionTag.cakeVersion}");
+                    }
+
+                    context.Information("Tested image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
+
                     if (data.ShouldPublish)
                     {
                         context.Information("Publishing image {0}...", cakeVersionTag.tag);

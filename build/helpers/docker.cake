@@ -106,19 +106,13 @@ public static void Tag (
 public static string Run (
     this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
     bool redirectStandardOutput,
-    string image,
-    string tag,
+    string imagetag,
     KeyValuePair<DirectoryPath, DirectoryPath>? volume,
     params string[] commands)
 {
-    if (string.IsNullOrWhiteSpace(image))
+    if (string.IsNullOrWhiteSpace(imagetag))
     {
-        throw new ArgumentNullException(nameof(image));
-    }
-
-    if (string.IsNullOrWhiteSpace(tag))
-    {
-        throw new ArgumentNullException(nameof(tag));
+        throw new ArgumentNullException(nameof(imagetag));
     }
 
     if (commands==null)
@@ -134,7 +128,7 @@ public static string Run (
         }
 
         args.Append("--rm")
-            .AppendQuoted($"{image}:{tag}");
+            .AppendQuoted(imagetag);
 
         foreach(var command in commands)
         {
