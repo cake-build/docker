@@ -119,6 +119,7 @@ Task("Get-Cake-Versions")
 Task("Docker-Build-BaseImages")
     .IsDependentOn("Get-Base-Image-Tags")
     .IsDependentOn("Get-Cake-Versions")
+    .DeferOnError()
     .DoesForEach<BuildData, BaseImage>(
         (data, context) => data.BaseImages,
         (data, baseImage, context) => {
