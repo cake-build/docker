@@ -107,7 +107,7 @@ Task("Get-Cake-Versions")
                     from version in item.Items
                     orderby version.CommitTimeStamp descending
                     select version.CatalogEntry.Version
-                ).Take(5)
+                ).Take(10)
             );
             foreach(var version in data.CakeVersions)
             {
