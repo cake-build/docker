@@ -4,6 +4,7 @@
 #load "build/models/builddata.cake"
 #load "build/helpers/httpclient.cake"
 #load "build/helpers/docker.cake"
+#load "build/helpers/semversion.cake"
 
 if (BuildSystem.GitHubActions.IsRunningOnGitHubActions)
 {
@@ -105,7 +106,13 @@ Task("Get-Cake-Versions")
                 (
                     from item in cakeNuGetIndex.Items
                     from version in item.Items
-                    orderby version.CommitTimeStamp descending
+                    orderby SemVersion.TryParse(
+                                version.CatalogEntry.Version,
+                                out var semVersion
+                            )
+                                ? semVersion
+                                : SemVersion.Zero
+                        descending
                     select version.CatalogEntry.Version
                 ).Take(10)
             );
