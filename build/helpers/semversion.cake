@@ -13,7 +13,6 @@ public struct SemVersion : IComparable, IComparable<SemVersion>, IEquatable<SemV
             RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture | RegexOptions.IgnoreCase
         );
 
-
     public int Major { get; }
     public int Minor { get; }
     public int Patch { get; }
@@ -28,7 +27,7 @@ public struct SemVersion : IComparable, IComparable<SemVersion>, IEquatable<SemV
     {
     }
 
-    SemVersion (int major, int minor, int patch, string preRelease, string meta, string versionString)
+    private SemVersion (int major, int minor, int patch, string preRelease, string meta, string versionString)
     {
         Major = major;
         Minor = minor;
