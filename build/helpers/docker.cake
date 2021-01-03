@@ -1,6 +1,9 @@
 #addin nuget:?package=Polly&version=7.2.1
 using Polly;
-public static bool IsDockerExperimental = false;
+public static bool IsDockerExperimental {get; private set;} = false;
+public static string DockerOs { get; private set; }
+public static bool DockerWindowsEngine { get; private set;}
+public static bool DockerLinuxEngine { get; private set; }
 
 public static Policy DockerRetryPolicy;
 DockerRetryPolicy = Policy
@@ -19,14 +22,15 @@ var DockerToolTimeout = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
 
 Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Cmd = (path, args, redirectStandardOutput) => {
     IEnumerable<string> redirectedStandardOutput = null;
-    var result = DockerRetryPolicy.Execute(
-        () => StartProcess(
-            path,
-            new ProcessSettings {
+    var settings =  new ProcessSettings {
                 Arguments = args(new ProcessArgumentBuilder()),
                 RedirectStandardOutput = redirectStandardOutput,
                 Timeout  = DockerToolTimeout
-            },
+            };
+    var result = DockerRetryPolicy.Execute(
+        () => StartProcess(
+            path,
+            settings,
             out redirectedStandardOutput)
     );
 
@@ -34,7 +38,7 @@ Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, strin
 
     if(0 != result)
     {
-        throw new Exception($"Failed to execute tool {path.GetFilename()} ({result})");
+        throw new Exception($"Failed to execute tool {path.GetFilename()} ({result}) with args: {settings.Arguments.RenderSafe()}");
     }
 
     return output;
@@ -43,9 +47,6 @@ Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, strin
 Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Docker =
     (command, args, redirectStandardOutput) =>
         Cmd(dockerPath, pab => args(pab.Append(command)), redirectStandardOutput);
-
-// Disable experimental
-//IsDockerExperimental = Docker("version", arg=>arg.Append("-f {{.Server.Experimental}}"), true) == "true";
 
 public static void Pull (this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker, string image)
 {
@@ -200,3 +201,10 @@ public static void ImageRemove(
                         .Append("--force"),
                         false);
 }
+
+DockerOs = Docker("version", arg=>arg.Append("-f {{.Server.Os}}"), true);
+DockerWindowsEngine = StringComparer.OrdinalIgnoreCase.Equals("windows", DockerOs);
+DockerLinuxEngine = StringComparer.OrdinalIgnoreCase.Equals("linux", DockerOs);
+
+// Disable experimental
+//IsDockerExperimental = Docker("version", arg=>arg.Append("-f {{.Server.Experimental}}"), true) == "true";

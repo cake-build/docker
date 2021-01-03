@@ -27,7 +27,9 @@ Setup<BuildData>(
         StringComparer.OrdinalIgnoreCase.Equals(
             "Publish",
             setupContext.TargetTask.Name
-        )
+        ),
+        DockerLinuxEngine,
+        DockerWindowsEngine
     )
 );
 
@@ -35,6 +37,11 @@ Task("Get-Base-Image-Tags")
     .DoesForEach<BuildData, Repository>(
         (data, context) => data.DockerRepos,
         (data, repository, context) => {
+            context.Information(
+                "Fetching tags WindowsContainer: {0}, LinuxContainer: {1}.",
+                data.WindowsContainer,
+                data.LinuxContainer
+            );
             var repositoryTags = data
                                 .Client
                                 .GetAsync<RepositoryTags>(repository.DockerRepoTagUri)
@@ -44,36 +51,30 @@ Task("Get-Base-Image-Tags")
 
             data.BaseImages.AddRange(
                 from tag in repositoryTags.Tags
-                where tag switch {
-                                        "2.1" => context.IsRunningOnUnix(),
-                                        "3.1" => context.IsRunningOnUnix(),
-                                        "5.0" => context.IsRunningOnUnix(),
-                                        string =>   (
-                                                        tag.StartsWith("2.1-")
-                                                        || tag.StartsWith("3.1-")
-                                                        || tag.StartsWith("5.0-")
-                                                    )
-                                                    && (
-                                                        (
-                                                            tag.Contains("windows")
-                                                            || tag.Contains("nanoserver")
-                                                        ) == context.IsRunningOnWindows()
-                                                    )
-                                                    && !tag.Contains("-arm")
+                where   // Exclude arm for now
+                        !tag.Contains("-arm")
 
-                                                    // Investigate fails on GitHub actions,
-                                                    // move excluded images to command line parameter
-                                                    && tag != "5.0-alpine3.11"
+                        // Investigate fails on GitHub actions,
+                        // move excluded images to command line parameter
+                        && tag != "5.0-alpine3.11"
 
-                                                    // Seems to be missing RTM .NET 5
-                                                    && tag != "5.0-nanoserver-1903",
-                                        _=> false
-                    }
-                select new BaseImage(
+                        // Seems to be missing RTM .NET 5
+                        && tag != "5.0-nanoserver-1903"
+
+                        // Exclude preview tags
+                        && !tag.Contains("preview")
+
+                        // No longer supported
+                        && !tag.StartsWith("5.0.100-rc.")
+
+                let baseImage =  new BaseImage(
                     repository.Name,
                     tag,
                     repository.CakePrefix
                 )
+                where   baseImage.WindowsContainer == data.WindowsContainer
+                        && baseImage.LinuxContainer == data.LinuxContainer
+                select baseImage
             );
 
             foreach(var baseImage in data.BaseImages)
@@ -118,7 +119,7 @@ Task("Get-Cake-Versions")
             );
             foreach(var version in data.CakeVersions)
             {
-                context.Information(version);;
+                context.Information(version);
             }
         }
     );
@@ -156,7 +157,7 @@ Task("Docker-Build-BaseImages")
                     Docker.Build(
                         cakeVersionTag.tag,
                         (
-                            context.IsRunningOnWindows()
+                            baseImage.WindowsContainer
                                 ? "./src/Windows.Dockerfile"
                                 : "./src/Linux.Dockerfile"
                         ),
