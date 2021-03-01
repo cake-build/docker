@@ -1,5 +1,9 @@
 {
-  "sdk": {
-    "version": "5.0.100"
-  }
+    "projects": [
+        "src"
+    ],
+    "sdk": {
+        "version": "5.0.103",
+        "rollForward": "latestFeature"
+    }
 }
