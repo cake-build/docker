@@ -228,4 +228,15 @@ Task("Default")
 Task("Publish")
     .IsDependentOn("Docker-Build-BaseImages");
 
-RunTarget(Argument("target", "Default"));
+RunTarget(
+    Argument(
+        "target",
+        (
+            BuildSystem.GitHubActions.IsRunningOnGitHubActions
+            &&
+            !BuildSystem.GitHubActions.Environment.PullRequest.IsPullRequest
+        )
+            ? "Publish"
+            : "Default"
+        )
+    );
