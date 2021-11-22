@@ -37,7 +37,7 @@ jobs:
           echo ::group::".NET Tool Restore"
           dotnet tool restore
           echo ::endgroup::
-          dotnet cake --remove-base-image=true --base-image-include-filter=${{ matrix.sdk }} --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-2
+          dotnet cake --remove-base-image=true --base-image-include-filter=${{ matrix.sdk }} --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-2 --base-image-exclude-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
 
   build-self-hosted:
     name: Build Self Hosted Agent
@@ -62,4 +62,4 @@ jobs:
           echo ::group::".NET Tool Restore"
           dotnet tool restore
           echo ::endgroup::
-          dotnet cake
+          dotnet cake --base-image-include-filter=6.0-nanoserver-1 --base-image-include-filter=6.0-nanoserver-2 --base-image-include-filter=5.0-nanoserver-1 --base-image-include-filter=5.0-nanoserver-2 --base-image-include-filter=3.1-nanoserver-1 --base-image-include-filter=3.1-nanoserver-2 --base-image-include-filter=5.0-windowsservercore-ltsc2019 --base-image-include-filter=6.0-windowsservercore-ltsc2019
