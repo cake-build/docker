@@ -8,7 +8,7 @@ public static bool DockerLinuxEngine { get; private set; }
 public static Policy DockerRetryPolicy;
 DockerRetryPolicy = Policy
                     .Handle<Exception>()
-                    .WaitAndRetry(10,
+                    .WaitAndRetry(5,
                         retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                         (exception, timeSpan, retryCount, context)=>{
                             Context.Log.Warning("Retry {0} because {1}...", retryCount, exception.Message);
