@@ -39,6 +39,35 @@ jobs:
           echo ::endgroup::
           dotnet cake --remove-base-image=true --base-image-include-filter=${{ matrix.sdk }} --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-2 --base-image-exclude-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
 
+  build-windows-2019:
+    name: "Build GitHub Agents"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2019]
+    steps:
+      - if: github.ref == 'refs/heads/master'
+        name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get the sources
+        uses: actions/checkout@v2
+
+      - name: Install .NET Core SDK
+        uses: actions/setup-dotnet@v1
+
+      - name: Run Cake script
+        run: |
+          echo ::group::".NET Tool Restore"
+          dotnet tool restore
+          echo ::endgroup::
+          dotnet cake --base-image-include-filter=6.0-nanoserver-1 --base-image-include-filter=6.0-nanoserver-2 --base-image-include-filter=5.0-nanoserver-1 --base-image-include-filter=5.0-nanoserver-2 --base-image-include-filter=3.1-nanoserver-1 --base-image-include-filter=3.1-nanoserver-2 --base-image-include-filter=5.0-windowsservercore-ltsc2019 --base-image-include-filter=6.0-windowsservercore-ltsc2019
+
+
   build-self-hosted:
     name: Build Self Hosted Agent
     runs-on: ${{ matrix.os }}
