@@ -16,8 +16,7 @@ Setup<BuildData>(
     setupContext => new(
         new HttpClient(),
         new Repository[] {
-            new ("dotnet/sdk", "sdk-") //,
-            //new ("dotnet/core/sdk", "sdk-")
+            new ("dotnet/sdk", "sdk-")
         },
         "https://api.nuget.org/v3/index.json",
         StringComparer.OrdinalIgnoreCase.Equals(
@@ -56,7 +55,8 @@ Task("Get-Base-Image-Tags")
 
                         // Investigate fails on GitHub actions,
                         // move excluded images to command line parameter
-                        && tag != "5.0-alpine3.11"
+                        && !tag.StartsWith("5.0-alpine3.11")
+                        && !tag.StartsWith("6.0-alpine3.13")
 
                         // Seems to be missing RTM .NET 5
                         && tag != "5.0-nanoserver-1903"
