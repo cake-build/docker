@@ -66,7 +66,7 @@ jobs:
           echo ::group::".NET Tool Restore"
           dotnet tool restore
           echo ::endgroup::
-          dotnet cake --base-image-include-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-include-filter=${{ matrix.sdk }}-nanoserver-2 --base-image-include-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
+          dotnet cake --base-image-include-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
 
 
   build-self-hosted:
@@ -74,8 +74,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         os: [self-hosted]
+        sdk: ['3.1', '5.0', '6.0']
     steps:
       - if: github.ref == 'refs/heads/master'
         name: Login to DockerHub
@@ -88,8 +90,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run Cake script
-        run: |
-          echo ::group::".NET Tool Restore"
-          dotnet tool restore
-          echo ::endgroup::
-          dotnet cake --base-image-include-filter=6.0-nanoserver-1 --base-image-include-filter=6.0-nanoserver-2 --base-image-include-filter=5.0-nanoserver-1 --base-image-include-filter=5.0-nanoserver-2 --base-image-include-filter=3.1-nanoserver-1 --base-image-include-filter=3.1-nanoserver-2 --base-image-include-filter=5.0-windowsservercore-ltsc2019 --base-image-include-filter=6.0-windowsservercore-ltsc2019
+        uses: cake-build/cake-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          cake-version: tool-manifest
+          arguments: |
+            base-image-include-filter: ${{ matrix.sdk }}-nanoserver-1
+            base-image-include-filter: ${{ matrix.sdk }}-nanoserver-2
