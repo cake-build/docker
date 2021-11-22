@@ -33,11 +33,17 @@ jobs:
         uses: actions/setup-dotnet@v1
 
       - name: Run Cake script
-        run: |
-          echo ::group::".NET Tool Restore"
-          dotnet tool restore
-          echo ::endgroup::
-          dotnet cake --remove-base-image=true --base-image-include-filter=${{ matrix.sdk }} --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-2 --base-image-exclude-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
+        uses: cake-build/cake-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          cake-version: tool-manifest
+          arguments: |
+            remove-base-image: true
+            base-image-include-filter: ${{ matrix.sdk }}
+            base-image-exclude-filter: ${{ matrix.sdk }}-nanoserver-1
+            base-image-exclude-filter: ${{ matrix.sdk }}-nanoserver-2
+            base-image-exclude-filter: ${{ matrix.sdk }}-windowsservercore-ltsc2019
 
   build-windows-2019:
     name: "Build GitHub Agents"
@@ -62,12 +68,14 @@ jobs:
         uses: actions/setup-dotnet@v1
 
       - name: Run Cake script
-        run: |
-          echo ::group::".NET Tool Restore"
-          dotnet tool restore
-          echo ::endgroup::
-          dotnet cake --base-image-include-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
-
+        uses: cake-build/cake-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          cake-version: tool-manifest
+          arguments: |
+            remove-base-image: true
+            base-image-include-filter: ${{ matrix.sdk }}-windowsservercore-ltsc2019
 
   build-self-hosted:
     name: Build Self Hosted Agent
