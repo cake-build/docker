@@ -9,9 +9,11 @@ public record BuildData(
     bool ShouldPublish,
     bool LinuxContainer,
     bool WindowsContainer,
-    string BaseImageFilter
+    string BaseImageFilter,
+    ICollection<string> IncompatibleVersions
     )
 {
     public List<BaseImage> BaseImages { get; } = new();
     public List<string> CakeVersions { get; } = new();
+    public List<string> BuildFailedImage { get; } = new();
 }

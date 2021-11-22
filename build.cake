@@ -28,7 +28,11 @@ Setup<BuildData>(
         ),
         DockerLinuxEngine,
         DockerWindowsEngine,
-        Argument("base-image-filter", string.Empty).ToLower()
+        Argument("base-image-filter", string.Empty).ToLower(),
+        IncompatibleVersions: new [] {
+            "cakebuild/cake:sdk-6.0-nanoserver-1909-v1.3.0",
+            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0-rc0001"
+        }
     )
 );
 
@@ -150,13 +154,14 @@ Task("Docker-Build-BaseImages")
                                                                                 cakeVersion =>
                                                                                 (
                                                                                     cakeVersion,
-                                                                                    string.Concat(
+                                                                                    tag: string.Concat(
                                                                                             baseImage.CakeImage,
                                                                                             "-v",
                                                                                             cakeVersion
                                                                                         )
                                                                                 )
                                                                             )
+                                                                            .Where(cakeVersionTag => !data. IncompatibleVersions.Contains(cakeVersionTag.tag))
                                                                             .ToArray();
 
             context.Information("Pulling base image {0}...", baseImage.Image);
@@ -166,19 +171,26 @@ Task("Docker-Build-BaseImages")
             Parallel.ForEach(
                 versionTags,
                 cakeVersionTag => {
-                    context.Information("Building image {0} based on {1}...", cakeVersionTag.tag, baseImage.Image);
-                    Docker.Build(
-                        cakeVersionTag.tag,
-                        (
-                            baseImage.WindowsContainer
-                                ? "./src/Windows.Dockerfile"
-                                : "./src/Linux.Dockerfile"
-                        ),
-                        new BuildArg[] {
-                            new("BASE_IMAGE", baseImage.Image),
-                            new("CAKE_VERSION", cakeVersionTag.cakeVersion)
-                        });
-                    context.Information("Built image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
+                    try
+                    {
+                        context.Information("Building image {0} based on {1}...", cakeVersionTag.tag, baseImage.Image);
+                        Docker.Build(
+                            cakeVersionTag.tag,
+                            (
+                                baseImage.WindowsContainer
+                                    ? "./src/Windows.Dockerfile"
+                                    : "./src/Linux.Dockerfile"
+                            ),
+                            new BuildArg[] {
+                                new("BASE_IMAGE", baseImage.Image),
+                                new("CAKE_VERSION", cakeVersionTag.cakeVersion)
+                            });
+                        context.Information("Built image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
+                    }
+                    catch
+                    {
+                        data.BuildFailedImage.Add(cakeVersionTag.tag);
+                    }
                 }
             );
 
@@ -234,6 +246,13 @@ Task("Docker-Build-BaseImages")
         }
     );
 
+Teardown<BuildData>((context, data) =>
+{
+    foreach(var failedBuild in data.BuildFailedImage)
+    {
+        Warning("BuildFailedImage: {0}", failedBuild);
+    }
+});
 
 Task("Default")
     .IsDependentOn("Docker-Build-BaseImages");
