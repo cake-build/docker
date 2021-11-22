@@ -170,9 +170,17 @@ Task("Docker-Build-BaseImages")
                                                                             .Where(cakeVersionTag => !data. IncompatibleVersions.Contains(cakeVersionTag.tag))
                                                                             .ToArray();
 
-            context.Information("Pulling base image {0}...", baseImage.Image);
-            Docker.Pull(baseImage.Image);
-            context.Information("Pulled image {0}.", baseImage.Image);
+            try
+            {
+                context.Information("Pulling base image {0}...", baseImage.Image);
+                Docker.Pull(baseImage.Image);
+                context.Information("Pulled image {0}.", baseImage.Image);
+            }
+            catch
+            {
+                data.PullFailedImages.Add(baseImage.Image);
+                throw;
+            }
 
             Parallel.ForEach(
                 versionTags,
@@ -195,7 +203,7 @@ Task("Docker-Build-BaseImages")
                     }
                     catch
                     {
-                        data.BuildFailedImage.Add(cakeVersionTag.tag);
+                        data.BuildFailedImages.Add(cakeVersionTag.tag);
                     }
                 }
             );
@@ -254,7 +262,11 @@ Task("Docker-Build-BaseImages")
 
 Teardown<BuildData>((context, data) =>
 {
-    foreach(var failedBuild in data.BuildFailedImage)
+    foreach(var failedPull in data.PullFailedImages)
+    {
+        Warning("PullFailedImage: {0}", failedPull);
+    }
+    foreach(var failedBuild in data.BuildFailedImages)
     {
         Warning("BuildFailedImage: {0}", failedBuild);
     }

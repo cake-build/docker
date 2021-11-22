@@ -16,5 +16,6 @@ public record BuildData(
 {
     public List<BaseImage> BaseImages { get; } = new();
     public List<string> CakeVersions { get; } = new();
-    public List<string> BuildFailedImage { get; } = new();
+    public List<string> PullFailedImages { get; } = new();
+    public List<string> BuildFailedImages { get; } = new();
 }
