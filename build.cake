@@ -4,7 +4,6 @@
 #load "build/models/builddata.cake"
 #load "build/helpers/httpclient.cake"
 #load "build/helpers/docker.cake"
-#load "build/helpers/semversion.cake"
 
 if (BuildSystem.GitHubActions.IsRunningOnGitHubActions)
 {
@@ -28,7 +27,8 @@ Setup<BuildData>(
             setupContext.TargetTask.Name
         ),
         DockerLinuxEngine,
-        DockerWindowsEngine
+        DockerWindowsEngine,
+        Argument("base-image-filter", string.Empty).ToLower()
     )
 );
 
@@ -67,6 +67,12 @@ Task("Get-Base-Image-Tags")
                         // No longer supported
                         && !tag.StartsWith("5.0.100-rc.")
 
+                        // Argument BaseImageFilter
+                        && (
+                            string.IsNullOrEmpty(data.BaseImageFilter)
+                            ||
+                            tag.StartsWith(data.BaseImageFilter)
+                        )
                 let baseImage =  new BaseImage(
                     repository.Name,
                     tag,
@@ -107,13 +113,20 @@ Task("Get-Cake-Versions")
                 (
                     from item in cakeNuGetIndex.Items
                     from version in item.Items
-                    orderby SemVersion.TryParse(
+                    where version.CatalogEntry.Version switch {
+                        "1.0.0-rc0001" => false,
+                        "1.0.0-rc0002" => false,
+                        "1.0.0-rc0003" => false,
+                        _ => true
+                    }
+                    let semVersion = SemVersion.TryParse(
                                 version.CatalogEntry.Version,
                                 out var semVersion
                             )
                                 ? semVersion
                                 : SemVersion.Zero
-                        descending
+                    orderby semVersion descending
+                    where semVersion.Major >= 1
                     select version.CatalogEntry.Version
                 ).Take(10)
             );
