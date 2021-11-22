@@ -9,7 +9,8 @@ public record BuildData(
     bool ShouldPublish,
     bool LinuxContainer,
     bool WindowsContainer,
-    string BaseImageFilter,
+    ICollection<string> BaseImageIncludeFilter,
+    ICollection<string> BaseImageExcludeFilter,
     ICollection<string> IncompatibleVersions
     )
 {

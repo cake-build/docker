@@ -28,7 +28,8 @@ Setup<BuildData>(
         ),
         DockerLinuxEngine,
         DockerWindowsEngine,
-        Argument("base-image-filter", string.Empty).ToLower(),
+        new HashSet<string>(HasArgument("base-image-include-filter") ? Arguments<string>("base-image-include-filter") : Array.Empty<string>(), StringComparer.OrdinalIgnoreCase),
+        new HashSet<string>(HasArgument("base-image-exclude-filter") ? Arguments<string>("base-image-exclude-filter") : Array.Empty<string>(), StringComparer.OrdinalIgnoreCase),
         IncompatibleVersions: new [] {
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v1.3.0",
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0-rc0001"
@@ -73,9 +74,14 @@ Task("Get-Base-Image-Tags")
 
                         // Argument BaseImageFilter
                         && (
-                            string.IsNullOrEmpty(data.BaseImageFilter)
+                            !data.BaseImageIncludeFilter.Any()
                             ||
-                            tag.StartsWith(data.BaseImageFilter)
+                            data.BaseImageIncludeFilter.Any(filter=>tag.StartsWith(filter))
+                        )
+                        && (
+                            !data.BaseImageIncludeFilter.Any()
+                            ||
+                            !data.BaseImageExcludeFilter.Any(filter=>tag.StartsWith(filter))
                         )
                 let baseImage =  new BaseImage(
                     repository.Name,

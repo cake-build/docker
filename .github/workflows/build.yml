@@ -37,7 +37,7 @@ jobs:
           echo ::group::".NET Tool Restore"
           dotnet tool restore
           echo ::endgroup::
-          dotnet cake --remove-base-image=true --base-image-filter=${{ matrix.sdk }}
+          dotnet cake --remove-base-image=true --base-image-include-filter=${{ matrix.sdk }} --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-exclude-filter=${{ matrix.sdk }}-nanoserver-2
 
   build-self-hosted:
     name: Build Self Hosted Agent
