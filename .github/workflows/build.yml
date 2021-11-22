@@ -46,6 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019]
+        sdk: ['3.1', '5.0', '6.0']
     steps:
       - if: github.ref == 'refs/heads/master'
         name: Login to DockerHub
@@ -65,7 +66,7 @@ jobs:
           echo ::group::".NET Tool Restore"
           dotnet tool restore
           echo ::endgroup::
-          dotnet cake --base-image-include-filter=6.0-nanoserver-1 --base-image-include-filter=6.0-nanoserver-2 --base-image-include-filter=5.0-nanoserver-1 --base-image-include-filter=5.0-nanoserver-2 --base-image-include-filter=3.1-nanoserver-1 --base-image-include-filter=3.1-nanoserver-2 --base-image-include-filter=5.0-windowsservercore-ltsc2019 --base-image-include-filter=6.0-windowsservercore-ltsc2019
+          dotnet cake --base-image-include-filter=${{ matrix.sdk }}-nanoserver-1 --base-image-include-filter=${{ matrix.sdk }}-nanoserver-2 --base-image-include-filter=${{ matrix.sdk }}-windowsservercore-ltsc2019
 
 
   build-self-hosted:
