@@ -238,9 +238,9 @@ Task("Docker-Build-BaseImages")
 
                     if (version == data.LatestStableCakeVersion)
                     {
-                        context.Information("Version {0} is latest stable, tagging image {1} based on {2}...", version, baseImage.CakeImage, tag);
+                        context.Information("Version {0} is latest stable, tagging image {1} based on {2} ({3})...", version, baseImage.CakeImage, tag, baseImage.Image);
                         Docker.Tag(tag, baseImage.CakeImage);
-                        context.Information("Version {0} is latest stable, tagged image {1} based on {2}.", version, baseImage.CakeImage, tag);
+                        context.Information("Version {0} is latest stable, tagged image {1} based on {2} ({3}).", version, baseImage.CakeImage, tag, baseImage.Image);
                     }
             }
 
@@ -256,9 +256,9 @@ Task("Docker-Build-BaseImages")
 
                         if (version == data.LatestStableCakeVersion)
                         {
-                            context.Information("Version {0} is latest stable, pushing image {1} based on {2}...", version, baseImage.CakeImage, tag);
+                            context.Information("Version {0} is latest stable, pushing image {1} based on {2} ({3})...", version, baseImage.CakeImage, tag, baseImage.Image);
                             Docker.Push(baseImage.CakeImage);
-                            context.Information("Version {0} is latest stable, pushing image {1} based on {2}.", version, baseImage.CakeImage, tag);
+                            context.Information("Version {0} is latest stable, pushed image {1} based on {2} ({3}).", version, baseImage.CakeImage, tag, baseImage.Image);
                         }
                 });
             }
@@ -271,9 +271,9 @@ Task("Docker-Build-BaseImages")
 
                 if (version == data.LatestStableCakeVersion)
                 {
-                    context.Information("Version {0} is latest stable, removing image {1} based on {2}...", version, baseImage.CakeImage, tag);
+                    context.Information("Version {0} is latest stable, removing image {1} based on {2} ({3})...", version, baseImage.CakeImage, tag, baseImage.Image);
                     Docker.ImageRemove(baseImage.CakeImage);
-                    context.Information("Version {0} is latest stable, removing image {1} based on {2}.", version, baseImage.CakeImage, tag);
+                    context.Information("Version {0} is latest stable, removed image {1} based on {2} ({3}).", version, baseImage.CakeImage, tag, baseImage.Image);
                 }
             }
 
