@@ -9,7 +9,7 @@ Cake official Docker files with .NET SDK and Cake global tool pre-installed.
 Images are currently continuously built for last 10 versions of Cake version 1.0 or newer.
 Currently based on official Microsoft images available ( [mcr.microsoft.com/dotnet/sdk](https://github.com/microsoft/containerregistry) ).
 
-To to pin to a specific version suffix with Cake version i.e. `cakebuild/cake:sdk-6.0` becomes `cakebuild/cake:sdk-6.0-v1.3.0`.
+To pin to a specific version suffix with Cake version i.e. `cakebuild/cake:sdk-6.0` becomes `cakebuild/cake:sdk-6.0-v1.3.0`.
 
 Tags are added dynamically as new are added to Microsoft container registry, check https://hub.docker.com/r/cakebuild/cake/tags for currently available tags.
 
@@ -105,7 +105,7 @@ These are set to be able to keep foreign binaries inside your container and also
 
 ## Build Infrastructure
 
-Containers are currently build using GitHub Actions.
+Containers are currently built using GitHub Actions.
 
 ### Operating systems
 
@@ -119,6 +119,6 @@ But you can also pass parameters to filter to specific base images to build or e
 
 | Name                      | Description                                                                                           |
 |---------------------------|-------------------------------------------------------------------------------------------------------|
-| remove-base-image         | Remove mcr base image after built, useful to conserve space used when building                        |
+| remove-base-image         | Remove mcr base image after build, useful to conserve space used when building                        |
 | base-image-include-filter | Base image must start with this, can be specified multiple times to include multiple base images      |
 | base-image-exclude-filter | Base image can't start with this, can be specified multiple times, to exclude multiple base images    |
