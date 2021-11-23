@@ -76,24 +76,12 @@ public static void Push (this Func<string, Func<ProcessArgumentBuilder, ProcessA
 
 public static void Tag (
     this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
-    string sourceImage,
     string sourceTag,
-    string targetImage,
     string targetTag)
 {
-    if (string.IsNullOrWhiteSpace(sourceImage))
-    {
-        throw new ArgumentNullException(nameof(sourceImage));
-    }
-
     if (string.IsNullOrWhiteSpace(sourceTag))
     {
         throw new ArgumentNullException(nameof(sourceTag));
-    }
-
-    if (string.IsNullOrWhiteSpace(targetImage))
-    {
-        throw new ArgumentNullException(nameof(targetImage));
     }
 
     if (string.IsNullOrWhiteSpace(targetTag))
@@ -101,7 +89,7 @@ public static void Tag (
         throw new ArgumentNullException(nameof(targetTag));
     }
 
-    docker("tag", args => args.AppendQuoted($"{sourceImage}:{sourceTag}").AppendQuoted($"{targetImage}:{targetTag}"), false);
+    docker("tag", args => args.AppendQuoted(sourceTag).AppendQuoted(targetTag), false);
 }
 
 public static string Run (

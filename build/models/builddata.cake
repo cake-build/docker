@@ -15,7 +15,8 @@ public record BuildData(
     )
 {
     public List<BaseImage> BaseImages { get; } = new();
-    public List<string> CakeVersions { get; } = new();
+    public List<SemVersion> CakeVersions { get; } = new();
     public List<string> PullFailedImages { get; } = new();
     public List<string> BuildFailedImages { get; } = new();
+    public SemVersion LatestStableCakeVersion { get; set; } = SemVersion.Zero;
 }

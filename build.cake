@@ -1,4 +1,3 @@
-#addin "nuget:?package=System.Text.Json&version=5.0.0&loaddependencies=true"
 #load "build/models/docker.cake"
 #load "build/models/nuget.cake"
 #load "build/models/builddata.cake"
@@ -137,13 +136,20 @@ Task("Get-Cake-Versions")
                                 : SemVersion.Zero
                     orderby semVersion descending
                     where semVersion.Major >= 1
-                    select version.CatalogEntry.Version
+                    select semVersion
                 ).Take(10)
             );
+
             foreach(var version in data.CakeVersions)
             {
-                context.Information(version);
+                if (data.LatestStableCakeVersion < version && !version.IsPreRelease)
+                {
+                    data.LatestStableCakeVersion = version;
+                }
+                context.Information("CakeVersion: {0}", version);
             }
+
+                context.Information("LatestStableCakeVersion: {0}", data.LatestStableCakeVersion);
         }
     );
 
@@ -154,7 +160,7 @@ Task("Docker-Build-BaseImages")
     .DoesForEach<BuildData, BaseImage>(
         (data, context) => data.BaseImages,
         (data, baseImage, context) => {
-            ICollection<(string cakeVersion, string tag)> versionTags = data
+            ICollection<(SemVersion cakeVersion, string tag)> versionTags = data
                                                                             .CakeVersions
                                                                             .Select(
                                                                                 cakeVersion =>
@@ -163,7 +169,7 @@ Task("Docker-Build-BaseImages")
                                                                                     tag: string.Concat(
                                                                                             baseImage.CakeImage,
                                                                                             "-v",
-                                                                                            cakeVersion
+                                                                                            cakeVersion.VersionString
                                                                                         )
                                                                                 )
                                                                             )
@@ -197,7 +203,7 @@ Task("Docker-Build-BaseImages")
                             ),
                             new BuildArg[] {
                                 new("BASE_IMAGE", baseImage.Image),
-                                new("CAKE_VERSION", cakeVersionTag.cakeVersion)
+                                new("CAKE_VERSION", cakeVersionTag.cakeVersion.VersionString)
                             });
                         context.Information("Built image {0} based on {1}.", cakeVersionTag.tag, baseImage.Image);
                     }
@@ -223,32 +229,52 @@ Task("Docker-Build-BaseImages")
                         builtVersion,
                         version);
 
-                    if (version != builtVersion)
+                    if (version.VersionString != builtVersion)
                     {
                         throw new Exception($"Built version {builtVersion}, expected version {version}");
                     }
 
                     context.Information("Tested image {0} based on {1}.", tag, baseImage.Image);
 
+                    if (version == data.LatestStableCakeVersion)
+                    {
+                        context.Information("Version {0} is latest stable, tagging image {1} based on {2}...", version, baseImage.CakeImage, tag);
+                        Docker.Tag(tag, baseImage.CakeImage);
+                        context.Information("Version {0} is latest stable, tagged image {1} based on {2}.", version, baseImage.CakeImage, tag);
+                    }
             }
 
             if (data.ShouldPublish)
             {
                 Parallel.ForEach(
                     versionTags,
-                    cakeVersionTag => {
+                    cakeVersionTags => {
+                        var (version, tag) = cakeVersionTags;
+                        context.Information("Publishing image {0}...", tag);
+                        Docker.Push(tag);
+                        context.Information("Published image {0}.", tag);
 
-                        context.Information("Publishing image {0}...", cakeVersionTag.tag);
-                        Docker.Push(cakeVersionTag.tag);
-                        context.Information("Published image {0}.", cakeVersionTag.tag);
+                        if (version == data.LatestStableCakeVersion)
+                        {
+                            context.Information("Version {0} is latest stable, pushing image {1} based on {2}...", version, baseImage.CakeImage, tag);
+                            Docker.Push(baseImage.CakeImage);
+                            context.Information("Version {0} is latest stable, pushing image {1} based on {2}.", version, baseImage.CakeImage, tag);
+                        }
                 });
             }
 
-            foreach(var (_, tag) in versionTags)
+            foreach(var (version, tag) in versionTags)
             {
                 context.Information("Removing image {0}...", tag);
                 Docker.ImageRemove(tag);
                 context.Information("Removed image {0}.", tag);
+
+                if (version == data.LatestStableCakeVersion)
+                {
+                    context.Information("Version {0} is latest stable, removing image {1} based on {2}...", version, baseImage.CakeImage, tag);
+                    Docker.ImageRemove(baseImage.CakeImage);
+                    context.Information("Version {0} is latest stable, removing image {1} based on {2}.", version, baseImage.CakeImage, tag);
+                }
             }
 
             if (data.RemoveBaseImage)
