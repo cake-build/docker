@@ -14,9 +14,9 @@ DockerRetryPolicy = Policy
                             Context.Log.Warning("Retry {0} because {1}...", retryCount, exception.Message);
                         });
 
-FilePath        dockerPath          =  Context.Tools.Resolve(IsRunningOnWindows() ? "docker.exe" : "docker")
-                                        ?? Context.Tools.Resolve(IsRunningOnWindows() ? "docker" : "docker.exe")
-                                        ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
+FilePath dockerPath = Context.Tools.Resolve(IsRunningOnWindows() ? "docker.exe" : "docker")
+                        ?? Context.Tools.Resolve(IsRunningOnWindows() ? "docker" : "docker.exe")
+                        ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
 
 var DockerToolTimeout = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
 
