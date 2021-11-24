@@ -1,4 +1,3 @@
-#addin "nuget:?package=System.Text.Json&version=5.0.0&loaddependencies=true"
 using System.Net.Http;
 using System.Text.Json;
 

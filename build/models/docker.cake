@@ -1,4 +1,3 @@
-#addin "nuget:?package=System.Text.Json&version=5.0.0&loaddependencies=true"
 using System.Text.Json.Serialization;
 
 public record Repository(string Name, string CakePrefix)

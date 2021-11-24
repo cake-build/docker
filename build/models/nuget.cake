@@ -1,4 +1,3 @@
-#addin "nuget:?package=System.Text.Json&version=5.0.0&loaddependencies=true"
 using System.Text.Json.Serialization;
 
 public record NuGetIndex
@@ -25,13 +24,13 @@ public record NuGetCommit
 
     [JsonPropertyName("commitId")]
     public Guid CommitId { get; init; }
-    
+
     [JsonPropertyName("commitTimeStamp")]
     public DateTimeOffset CommitTimeStamp { get; init; }
 }
 
 public record NuGetContainer<T> : NuGetCommit
-{ 
+{
     [JsonPropertyName("count")]
     public int Count { get; init; }
 
