@@ -27,8 +27,8 @@ Setup<BuildData>(
         ),
         DockerLinuxEngine,
         DockerWindowsEngine,
-        new HashSet<string>(HasArgument("base-image-include-filter") ? Arguments<string>("base-image-include-filter") : Array.Empty<string>(), StringComparer.OrdinalIgnoreCase),
-        new HashSet<string>(HasArgument("base-image-exclude-filter") ? Arguments<string>("base-image-exclude-filter") : Array.Empty<string>(), StringComparer.OrdinalIgnoreCase),
+        new HashSet<string>(Arguments<string>("base-image-include-filter", Array.Empty<string>()), StringComparer.OrdinalIgnoreCase),
+        new HashSet<string>(Arguments<string>("base-image-exclude-filter", Array.Empty<string>()), StringComparer.OrdinalIgnoreCase),
         IncompatibleVersions: new [] {
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v1.3.0",
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0-rc0001"
@@ -217,19 +217,23 @@ Task("Docker-Build-BaseImages")
             foreach (var (version, tag) in versionTags)
             {
                     context.Information("Testing image {0} based on {1}...", tag, baseImage.Image);
-                    var builtVersion = Docker.Run(
-                        true,
-                        tag,
-                        null,
-                        "dotnet-cake",
-                        "--version");
+                    var builtVersion =  SemVersion.TryParse(
+                                            Docker.Run(
+                                                true,
+                                                tag,
+                                                null,
+                                                "dotnet-cake",
+                                                "--version"),
+                                            out var parsedVersion)
+                                            ? parsedVersion
+                                            : SemVersion.Zero;
 
                     context.Information(
                         "Built version {0}, expected version {1}.",
                         builtVersion,
                         version);
 
-                    if (version.VersionString != builtVersion)
+                    if (version != builtVersion)
                     {
                         throw new Exception($"Built version {builtVersion}, expected version {version}");
                     }
