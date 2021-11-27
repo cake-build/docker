@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-latest, windows-2022]
         sdk: ['3.1', '5.0', '6.0']
     steps:
-      - if: github.ref == 'refs/heads/master'
+      - if: github.ref == 'refs/heads/main'
         name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -54,7 +54,7 @@ jobs:
         os: [windows-2019]
         sdk: ['3.1', '5.0', '6.0']
     steps:
-      - if: github.ref == 'refs/heads/master'
+      - if: github.ref == 'refs/heads/main'
         name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -87,7 +87,7 @@ jobs:
         os: [self-hosted]
         sdk: ['3.1', '5.0', '6.0']
     steps:
-      - if: github.ref == 'refs/heads/master'
+      - if: github.ref == 'refs/heads/main'
         name: Login to DockerHub
         uses: docker/login-action@v1
         with:
