@@ -31,9 +31,8 @@ Setup<BuildData>(
         new HashSet<string>(Arguments<string>("base-image-exclude-filter", Array.Empty<string>()), StringComparer.OrdinalIgnoreCase),
         IncompatibleVersions: new [] {
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v1.3.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0-rc0001",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0-rc0002",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.0.0-rc0002"
+            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0",
+            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.0.0"
         }
     )
 );
@@ -125,9 +124,12 @@ Task("Get-Cake-Versions")
                     from item in cakeNuGetIndex.Items
                     from version in item.Items
                     where version.CatalogEntry.Version switch {
+                        // Excluded old pre-releases
                         "1.0.0-rc0001" => false,
                         "1.0.0-rc0002" => false,
                         "1.0.0-rc0003" => false,
+                        "2.0.0-rc0002" => false,
+                        "2.0.0-rc0001" => false,
                         _ => true
                     }
                     let semVersion = SemVersion.TryParse(
