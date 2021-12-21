@@ -9,12 +9,12 @@ on:
 
 jobs:
   build:
-    name: "Build GitHub Agents"
+    name: Build GitHub Agents
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019]
+        os: [ubuntu-latest]
         sdk: ['3.1', '5.0', '6.0']
     steps:
       - if: github.ref == 'refs/heads/main'
@@ -38,4 +38,7 @@ jobs:
           cake-version: tool-manifest
           arguments: |
             remove-base-image: true
-            base-image-include-filter: ${{ matrix.sdk }}-windowsservercore-ltsc2019
+            base-image-include-filter: ${{ matrix.sdk }}
+            base-image-exclude-filter: ${{ matrix.sdk }}-nanoserver-1
+            base-image-exclude-filter: ${{ matrix.sdk }}-nanoserver-2
+            base-image-exclude-filter: ${{ matrix.sdk }}-windowsservercore-ltsc2019
