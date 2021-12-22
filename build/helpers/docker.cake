@@ -18,9 +18,9 @@ FilePath dockerPath = Context.Tools.Resolve(IsRunningOnWindows() ? "docker.exe" 
                         ?? Context.Tools.Resolve(IsRunningOnWindows() ? "docker" : "docker.exe")
                         ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
 
-var DockerToolTimeout = (int)TimeSpan.FromMinutes(3).TotalMilliseconds;
+var DockerToolTimeout = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
 
-Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Cmd = (path, args, redirectStandardOutput) => {
+CmdHandler Cmd = (path, args, redirectStandardOutput) => {
     IEnumerable<string> redirectedStandardOutput = null;
     var settings =  new ProcessSettings {
                 Arguments = args(new ProcessArgumentBuilder()),
@@ -44,11 +44,12 @@ Func<FilePath, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, strin
     return output;
 };
 
-Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> Docker =
+
+DockerHandler Docker =
     (command, args, redirectStandardOutput) =>
         Cmd(dockerPath, pab => args(pab.Append(command)), redirectStandardOutput);
 
-public static void Pull (this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker, string image)
+public static void Pull (this DockerHandler docker, string image, bool quiet = true)
 {
     if (string.IsNullOrWhiteSpace(image))
     {
@@ -58,13 +59,13 @@ public static void Pull (this Func<string, Func<ProcessArgumentBuilder, ProcessA
     docker(
         "pull",
         args => args
-                    .Append("--quiet")
+                    .Append(quiet ? "--quiet" : string.Empty)
                     .AppendQuoted(image),
         false
         );
 }
 
-public static void Push (this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker, string tag)
+public static void Push (this DockerHandler docker, string tag)
 {
     if (string.IsNullOrWhiteSpace(tag))
     {
@@ -75,7 +76,7 @@ public static void Push (this Func<string, Func<ProcessArgumentBuilder, ProcessA
 }
 
 public static void Tag (
-    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
+    this DockerHandler docker,
     string sourceTag,
     string targetTag)
 {
@@ -93,7 +94,7 @@ public static void Tag (
 }
 
 public static string Run (
-    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
+    this DockerHandler docker,
     bool redirectStandardOutput,
     string imagetag,
     KeyValuePair<DirectoryPath, DirectoryPath>? volume,
@@ -131,7 +132,7 @@ public static string Run (
 public record BuildArg(string Name, string Value);
 
 public static void Build(
-    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
+    this DockerHandler docker,
     string tag,
     FilePath dockerFilePath,
     IEnumerable<BuildArg> buildArgs
@@ -147,9 +148,9 @@ public static void Build(
         throw new ArgumentNullException(nameof(buildArgs));
     }
 
-    Func<ProcessArgumentBuilder, ProcessArgumentBuilder> experimentalArgs = IsDockerExperimental
+    ArgumentHandler experimentalArgs = IsDockerExperimental
                                                                                 ? args=> args.Append("--squash")
-                                                                                : new Func<ProcessArgumentBuilder, ProcessArgumentBuilder>(args=> args);
+                                                                                : new ArgumentHandler(args=> args);
 
 
 
@@ -175,7 +176,7 @@ public static ProcessArgumentBuilder AppendDockerBuildArgs(this ProcessArgumentB
 }
 
 public static void ImageRemove(
-    this Func<string, Func<ProcessArgumentBuilder, ProcessArgumentBuilder>, bool, string> docker,
+    this DockerHandler docker,
     string tag
     )
 {
@@ -193,6 +194,10 @@ public static void ImageRemove(
 DockerOs = Docker("version", arg=>arg.Append("-f {{.Server.Os}}"), true);
 DockerWindowsEngine = StringComparer.OrdinalIgnoreCase.Equals("windows", DockerOs);
 DockerLinuxEngine = StringComparer.OrdinalIgnoreCase.Equals("linux", DockerOs);
+
+public delegate string CmdHandler(FilePath path, ArgumentHandler args, bool redirectStandardOutput);
+public delegate string DockerHandler(string command, ArgumentHandler args, bool redirectStandardOutput);
+public delegate ProcessArgumentBuilder ArgumentHandler(ProcessArgumentBuilder args);
 
 // Disable experimental
 //IsDockerExperimental = Docker("version", arg=>arg.Append("-f {{.Server.Experimental}}"), true) == "true";
