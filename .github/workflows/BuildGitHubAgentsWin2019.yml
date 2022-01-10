@@ -6,6 +6,8 @@ on:
       - main
       - develop
       - hotfix/*
+  schedule:
+    - cron:  '0 7 * * WED'
 
 jobs:
   build:
