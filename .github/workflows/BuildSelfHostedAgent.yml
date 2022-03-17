@@ -30,6 +30,7 @@ jobs:
 
   build-self-hosted:
     name: Build Self Hosted Agent
+    needs:  start-azure-vm
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -61,6 +62,7 @@ jobs:
 
   stop-azure-vm:
     name: Stop Azure Agent
+    needs: build-self-hosted
     runs-on: ubuntu-latest
     steps:
 
@@ -75,4 +77,4 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az vm deallocate --hibernate --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_RESOURCE_VMNAME }} --verbose
+            az vm deallocate --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_RESOURCE_VMNAME }} --verbose
