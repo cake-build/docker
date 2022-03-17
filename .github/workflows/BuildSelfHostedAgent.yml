@@ -6,6 +6,8 @@ on:
       - main
       - develop
       - hotfix/*
+  schedule:
+    - cron:  '0 7 * * WED'
 
 jobs:
   build-self-hosted:
@@ -18,6 +20,21 @@ jobs:
         os: [self-hosted]
         sdk: ['3.1', '5.0', '6.0']
     steps:
+
+      - if: github.ref == 'refs/heads/main'
+        name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - if: github.ref == 'refs/heads/main'
+        name: Azure CLI script file
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az vm start --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_RESOURCE_VMNAME }} --verbose
+
       - if: github.ref == 'refs/heads/main'
         name: Login to DockerHub
         uses: docker/login-action@v1
