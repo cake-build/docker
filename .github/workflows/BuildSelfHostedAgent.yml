@@ -10,6 +10,24 @@ on:
     - cron:  '0 7 * * WED'
 
 jobs:
+  start-azure-vm:
+    name: Start Azure Agent
+    runs-on: ubuntu-latest
+    steps:
+
+      - if: github.ref == 'refs/heads/main'
+        name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - if: github.ref == 'refs/heads/main'
+        name: Azure CLI script file
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az vm start --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_RESOURCE_VMNAME }} --verbose
+
   build-self-hosted:
     name: Build Self Hosted Agent
     runs-on: ${{ matrix.os }}
@@ -54,3 +72,21 @@ jobs:
           arguments: |
             base-image-include-filter: ${{ matrix.sdk }}-nanoserver-1
             base-image-include-filter: ${{ matrix.sdk }}-nanoserver-2
+
+  stop-azure-vm:
+    name: Stop Azure Agent
+    runs-on: ubuntu-latest
+    steps:
+
+      - if: github.ref == 'refs/heads/main'
+        name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - if: github.ref == 'refs/heads/main'
+        name: Azure CLI script file
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az vm deallocate --hibernate --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_RESOURCE_VMNAME }} --verbose
