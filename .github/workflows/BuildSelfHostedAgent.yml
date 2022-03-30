@@ -1,4 +1,4 @@
-name: Build
+name: Build on Self Hosted Agent
 on:
   pull_request:
   push:
@@ -29,7 +29,7 @@ jobs:
             az vm start --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name ${{ secrets.AZURE_RESOURCE_VMNAME }} --verbose
 
   build-self-hosted:
-    name: Build Self Hosted Agent
+    name: Build Images
     needs:  start-azure-vm
     runs-on: ${{ matrix.os }}
     strategy:
