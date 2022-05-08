@@ -1,4 +1,8 @@
-[![Build](https://github.com/cake-build/docker/actions/workflows/build.yml/badge.svg)](https://github.com/cake-build/docker/actions/workflows/build.yml) [![Docker Pulls](https://img.shields.io/docker/pulls/cakebuild/cake.svg)](https://hub.docker.com/r/cakebuild/cake/tags/) [![Docker Stars](https://img.shields.io/docker/stars/cakebuild/cake.svg)](https://hub.docker.com/r/cakebuild/cake/tags/)
+[![Build on GitHub Ubuntu Latest Agent](https://github.com/cake-build/docker/actions/workflows/BuildGitHubAgentsUbuntuLatest.yml/badge.svg)](https://github.com/cake-build/docker/actions/workflows/BuildGitHubAgentsUbuntuLatest.yml)
+[![Build on GitHub Windows 2019 Agent](https://github.com/cake-build/docker/actions/workflows/BuildGitHubAgentsWin2019.yml/badge.svg)](https://github.com/cake-build/docker/actions/workflows/BuildGitHubAgentsWin2019.yml)
+[![Build on GitHub Windows 2022 Agent](https://github.com/cake-build/docker/actions/workflows/BuildGitHubAgentsWin2022.yml/badge.svg)](https://github.com/cake-build/docker/actions/workflows/BuildGitHubAgentsWin2022.yml)
+[![Build on Self Hosted Agent](https://github.com/cake-build/docker/actions/workflows/BuildSelfHostedAgent.yml/badge.svg)](https://github.com/cake-build/docker/actions/workflows/BuildSelfHostedAgent.yml)
+[![Docker Pulls](https://img.shields.io/docker/pulls/cakebuild/cake.svg)](https://hub.docker.com/r/cakebuild/cake/tags/) [![Docker Stars](https://img.shields.io/docker/stars/cakebuild/cake.svg)](https://hub.docker.com/r/cakebuild/cake/tags/)
 
 # Cake docker images 🍰🐳
 
