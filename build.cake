@@ -36,7 +36,9 @@ Setup<BuildData>(
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.1.0",
             "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.1.0",
             "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.2.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.2.0"
+            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.2.0",
+            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.3.0",
+            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.3.0"
         }
     )
 );
