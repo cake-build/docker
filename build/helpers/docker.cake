@@ -16,6 +16,8 @@ DockerRetryPolicy = Policy
 
 FilePath dockerPath = Context.Tools.Resolve(IsRunningOnWindows() ? "docker.exe" : "docker")
                         ?? Context.Tools.Resolve(IsRunningOnWindows() ? "docker" : "docker.exe")
+                        ?? Context.Tools.Resolve(IsRunningOnWindows() ? "podman.exe" : "podman")
+                        ?? Context.Tools.Resolve(IsRunningOnWindows() ? "podman" : "podman.exe")
                         ?? throw new System.IO.FileNotFoundException("Docker tool couldn't be resolved.", IsRunningOnUnix() ? "docker" : "docker.exe");
 
 var DockerToolTimeout = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
