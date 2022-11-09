@@ -29,19 +29,7 @@ Setup<BuildData>(
         DockerWindowsEngine,
         new HashSet<string>(Arguments<string>("base-image-include-filter", Array.Empty<string>()), StringComparer.OrdinalIgnoreCase),
         new HashSet<string>(Arguments<string>("base-image-exclude-filter", Array.Empty<string>()), StringComparer.OrdinalIgnoreCase),
-        IncompatibleVersions: new [] {
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v1.3.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.0.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.0.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.1.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.1.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.2.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.2.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v2.3.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v2.3.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-1909-v3.0.0",
-            "cakebuild/cake:sdk-6.0-nanoserver-2004-v3.0.0"
-        }
+        IncompatibleVersions: Array.Empty<string>()
     )
 );
 
@@ -66,19 +54,17 @@ Task("Get-Base-Image-Tags")
                 where   // Exclude arm for now
                         !tag.Contains("-arm")
 
-                        // Investigate fails on GitHub actions,
-                        // move excluded images to command line parameter
-                        && !tag.StartsWith("5.0-alpine3.11")
-                        && !tag.StartsWith("6.0-alpine3.13")
+                        // Out of support Alpine
+                        && !tag.Contains("alpine3.11")
+                        && !tag.Contains("alpine3.13")
+                        && !tag.Contains("alpine3.15")
 
-                        // Seems to be missing RTM .NET 5
-                        && tag != "5.0-nanoserver-1903"
+                        // Out of support Windows
+                        && tag != "6.0-nanoserver-1909"
+                        && tag != "6.0-nanoserver-2004"
 
                         // Exclude preview tags
                         && !tag.Contains("preview")
-
-                        // No longer supported
-                        && !tag.StartsWith("5.0.100-rc.")
 
                         // Argument BaseImageFilter
                         && (
@@ -132,12 +118,7 @@ Task("Get-Cake-Versions")
                     from item in cakeNuGetIndex.Items
                     from version in item.Items
                     where version.CatalogEntry.Version switch {
-                        // Excluded old pre-releases
-                        "1.0.0-rc0001" => false,
-                        "1.0.0-rc0002" => false,
-                        "1.0.0-rc0003" => false,
-                        "2.0.0-rc0002" => false,
-                        "2.0.0-rc0001" => false,
+                        // Versions to exclude
                         _ => true
                     }
                     let semVersion = SemVersion.TryParse(
@@ -147,7 +128,7 @@ Task("Get-Cake-Versions")
                                 ? semVersion
                                 : SemVersion.Zero
                     orderby semVersion descending
-                    where semVersion.Major >= 1
+                    where semVersion.Major >= 2
                     select semVersion
                 ).Take(10)
             );
