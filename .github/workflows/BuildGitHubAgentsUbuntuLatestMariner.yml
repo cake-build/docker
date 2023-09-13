@@ -1,4 +1,4 @@
-name: Build on GitHub Ubuntu Latest Agent
+name: Build Mariner on GitHub Ubuntu Latest Agent
 on:
   workflow_dispatch:
   pull_request:
@@ -41,15 +41,7 @@ jobs:
           cake-version: tool-manifest
           arguments: |
             remove-base-image: true
-            base-image-include-filter: ${{ matrix.sdk }}
-            base-image-exclude-filter: ${{ matrix.sdk }}-nanoserver-1
-            base-image-exclude-filter: ${{ matrix.sdk }}-nanoserver-2
-            base-image-exclude-filter: ${{ matrix.sdk }}-windowsservercore-ltsc2019
-            base-image-exclude-filter: ${{ matrix.sdk }}-cbl-mariner
-            base-image-exclude-filter: ${{ matrix.sdk }}-cbl-mariner-amd64
-            base-image-exclude-filter: ${{ matrix.sdk }}-cbl-mariner2.0
-            base-image-exclude-filter: ${{ matrix.sdk }}-cbl-mariner2.0-amd64
-            base-image-exclude-filter: ${{ matrix.sdk }}-focal
-            base-image-exclude-filter: ${{ matrix.sdk }}-focal-amd64
-            base-image-exclude-filter: ${{ matrix.sdk }}-jammy
-            base-image-exclude-filter: ${{ matrix.sdk }}-jammy-amd64
+            base-image-include-filter: ${{ matrix.sdk }}-cbl-mariner
+            base-image-include-filter: ${{ matrix.sdk }}-cbl-mariner-amd64
+            base-image-include-filter: ${{ matrix.sdk }}-cbl-mariner2.0
+            base-image-include-filter: ${{ matrix.sdk }}-cbl-mariner2.0-amd64
