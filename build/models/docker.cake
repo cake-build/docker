@@ -15,13 +15,13 @@ public record BaseImage(string Repo, string Tag, string CakePrefix)
     public string CakeImage { get; } = $"cakebuild/cake:{CakePrefix}{Tag}";
 
     public bool LinuxContainer { get; } = Tag switch {
-                                            "3.1" => true,
                                             "6.0" => true,
                                             "7.0" => true,
+                                            "8.0" => true,
                                             string =>   (
-                                                            Tag.StartsWith("3.1-")
-                                                            || Tag.StartsWith("6.0-")
+                                                            Tag.StartsWith("6.0-")
                                                             || Tag.StartsWith("7.0-")
+                                                            || Tag.StartsWith("8.0-")
                                                         )
                                                         && (
                                                             !(
@@ -33,9 +33,9 @@ public record BaseImage(string Repo, string Tag, string CakePrefix)
                                         };
     public bool WindowsContainer { get; } =   Tag switch {
                                                 string => (
-                                                           Tag.StartsWith("3.1-")
-                                                            || Tag.StartsWith("6.0-")
+                                                           Tag.StartsWith("6.0-")
                                                             || Tag.StartsWith("7.0-")
+                                                             || Tag.StartsWith("8.0-")
                                                         )
                                                         && (
                                                             (
