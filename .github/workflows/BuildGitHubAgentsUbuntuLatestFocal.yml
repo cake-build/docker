@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        sdk: ['6.0', '7.0']
+        sdk: ['6.0', '7.0', '8.0']
     steps:
       - if: github.ref == 'refs/heads/main'
         name: Login to DockerHub
@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-dotnet@v3
 
       - name: Run Cake script
-        uses: cake-build/cake-action@v1
+        uses: cake-build/cake-action@master
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
