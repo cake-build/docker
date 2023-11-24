@@ -1,3 +1,4 @@
+#addin nuget:?package=Polly.Core&version=8.2.0
 #addin nuget:?package=Polly&version=8.2.0
 using Polly;
 public static bool IsDockerExperimental {get; private set;} = false;
