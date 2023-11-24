@@ -21,74 +21,73 @@ Tags are added dynamically as new are added to Microsoft container registry, che
 
 | Image                                         | Based on                                              |
 |-----------------------------------------------|-------------------------------------------------------|
-| cakebuild/cake:sdk-6.0                        | mcr.microsoft.com/dotnet/sdk:6.0                      |
-| cakebuild/cake:sdk-5.0                        | mcr.microsoft.com/dotnet/sdk:5.0                      |
-| cakebuild/cake:sdk-3.1                        | mcr.microsoft.com/dotnet/sdk:3.1                      |
-| cakebuild/cake:sdk-6.0-alpine                 | mcr.microsoft.com/dotnet/sdk:6.0-alpine               |
-| cakebuild/cake:sdk-6.0-alpine3.14             | mcr.microsoft.com/dotnet/sdk:6.0-alpine3.14           |
-| cakebuild/cake:sdk-6.0-bullseye-slim          | mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim        |
-| cakebuild/cake:sdk-6.0-cbl-mariner1.0         | mcr.microsoft.com/dotnet/sdk:6.0-cbl-mariner1.0       |
-| cakebuild/cake:sdk-6.0-focal                  | mcr.microsoft.com/dotnet/sdk:6.0-focal                |
-| cakebuild/cake:sdk-5.0-alpine based           | mcr.microsoft.com/dotnet/sdk:5.0-alpine               |
-| cakebuild/cake:sdk-5.0-alpine3.12 based       | mcr.microsoft.com/dotnet/sdk:5.0-alpine3.12           |
-| cakebuild/cake:sdk-5.0-alpine3.13 based       | mcr.microsoft.com/dotnet/sdk:5.0-alpine3.13           |
-| cakebuild/cake:sdk-5.0-alpine3.14             | mcr.microsoft.com/dotnet/sdk:5.0-alpine3.14           |
-| cakebuild/cake:sdk-5.0-bullseye-slim          | mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim        |
-| cakebuild/cake:sdk-5.0-buster-slim            | mcr.microsoft.com/dotnet/sdk:5.0-buster-slim          |
-| cakebuild/cake:sdk-5.0-cbl-mariner1.0         | mcr.microsoft.com/dotnet/sdk:5.0-cbl-mariner1.0       |
-| cakebuild/cake:sdk-5.0-focal                  | mcr.microsoft.com/dotnet/sdk:5.0-focal                |
-| cakebuild/cake:sdk-3.1-alpine                 | mcr.microsoft.com/dotnet/sdk:3.1-alpine               |
-| cakebuild/cake:sdk-3.1-alpine3.12             | mcr.microsoft.com/dotnet/sdk:3.1-alpine3.12           |
-| cakebuild/cake:sdk-3.1-alpine3.13             | mcr.microsoft.com/dotnet/sdk:3.1-alpine3.13           |
-| cakebuild/cake:sdk-3.1-alpine3.14             | mcr.microsoft.com/dotnet/sdk:3.1-alpine3.14           |
-| cakebuild/cake:sdk-3.1-bionic                 | mcr.microsoft.com/dotnet/sdk:3.1-bionic               |
-| cakebuild/cake:sdk-3.1-bullseye               | mcr.microsoft.com/dotnet/sdk:3.1-bullseye             |
-| cakebuild/cake:sdk-3.1-buster                 | mcr.microsoft.com/dotnet/sdk:3.1-buster               |
-| cakebuild/cake:sdk-3.1-cbl-mariner1.0         | mcr.microsoft.com/dotnet/sdk:3.1-cbl-mariner1.0       |
-| cakebuild/cake:sdk-3.1-focal                  | mcr.microsoft.com/dotnet/sdk:3.1-focal                |
-
+|  cakebuild/cakesdk:6.0                        |  mcr.microsoft.com/dotnet/sdk:6.0                     |
+|  cakebuild/cakesdk:6.0-alpine                 |  mcr.microsoft.com/dotnet/sdk:6.0-alpine              |
+|  cakebuild/cakesdk:6.0-alpine3.14             |  mcr.microsoft.com/dotnet/sdk:6.0-alpine3.14          |
+|  cakebuild/cakesdk:6.0-alpine3.16             |  mcr.microsoft.com/dotnet/sdk:6.0-alpine3.16          |
+|  cakebuild/cakesdk:6.0-alpine3.17             |  mcr.microsoft.com/dotnet/sdk:6.0-alpine3.17          |
+|  cakebuild/cakesdk:6.0-alpine3.18             |  mcr.microsoft.com/dotnet/sdk:6.0-alpine3.18          |
+|  cakebuild/cakesdk:6.0-bookworm-slim          |  mcr.microsoft.com/dotnet/sdk:6.0-bookworm-slim       |
+|  cakebuild/cakesdk:6.0-bullseye-slim          |  mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim       |
+|  cakebuild/cakesdk:6.0-cbl-mariner            |  mcr.microsoft.com/dotnet/sdk:6.0-cbl-mariner         |
+|  cakebuild/cakesdk:6.0-cbl-mariner1.0         |  mcr.microsoft.com/dotnet/sdk:6.0-cbl-mariner1.0      |
+|  cakebuild/cakesdk:6.0-cbl-mariner2.0         |  mcr.microsoft.com/dotnet/sdk:6.0-cbl-mariner2.0      |
+|  cakebuild/cakesdk:6.0-focal                  |  mcr.microsoft.com/dotnet/sdk:6.0-focal               |
+|  cakebuild/cakesdk:6.0-jammy                  |  mcr.microsoft.com/dotnet/sdk:6.0-jammy               |
+|  cakebuild/cakesdk:7.0                        |  mcr.microsoft.com/dotnet/sdk:7.0                     |
+|  cakebuild/cakesdk:7.0-alpine                 |  mcr.microsoft.com/dotnet/sdk:7.0-alpine              |
+|  cakebuild/cakesdk:7.0-alpine3.16             |  mcr.microsoft.com/dotnet/sdk:7.0-alpine3.16          |
+|  cakebuild/cakesdk:7.0-alpine3.17             |  mcr.microsoft.com/dotnet/sdk:7.0-alpine3.17          |
+|  cakebuild/cakesdk:7.0-alpine3.18             |  mcr.microsoft.com/dotnet/sdk:7.0-alpine3.18          |
+|  cakebuild/cakesdk:7.0-bookworm-slim          |  mcr.microsoft.com/dotnet/sdk:7.0-bookworm-slim       |
+|  cakebuild/cakesdk:7.0-bullseye-slim          |  mcr.microsoft.com/dotnet/sdk:7.0-bullseye-slim       |
+|  cakebuild/cakesdk:7.0-cbl-mariner            |  mcr.microsoft.com/dotnet/sdk:7.0-cbl-mariner         |
+|  cakebuild/cakesdk:7.0-cbl-mariner2.0         |  mcr.microsoft.com/dotnet/sdk:7.0-cbl-mariner2.0      |
+|  cakebuild/cakesdk:7.0-jammy                  |  mcr.microsoft.com/dotnet/sdk:7.0-jammy               |
+|  cakebuild/cakesdk:8.0                        |  mcr.microsoft.com/dotnet/sdk:8.0                     |
+|  cakebuild/cakesdk:8.0-alpine                 |  mcr.microsoft.com/dotnet/sdk:8.0-alpine              |
+|  cakebuild/cakesdk:8.0-alpine3.18             |  mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18          |
+|  cakebuild/cakesdk:8.0-bookworm-slim          |  mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim       |
+|  cakebuild/cakesdk:8.0-cbl-mariner            |  mcr.microsoft.com/dotnet/sdk:8.0-cbl-mariner         |
+|  cakebuild/cakesdk:8.0-cbl-mariner2.0         |  mcr.microsoft.com/dotnet/sdk:8.0-cbl-mariner2.0      |
+|  cakebuild/cakesdk:8.0-jammy                  |  mcr.microsoft.com/dotnet/sdk:8.0-jammy               |
 
 ### Windows Images
 
-| Image                                             | Based on                                              |
-|---------------------------------------------------|-------------------------------------------------------|
-| cakebuild/cake:sdk-3.1-nanoserver-1809            | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-1809      |
-| cakebuild/cake:sdk-3.1-nanoserver-1903            | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-1903      |
-| cakebuild/cake:sdk-3.1-nanoserver-1909            | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-1909      |
-| cakebuild/cake:sdk-3.1-nanoserver-2004            | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-2004      |
-| cakebuild/cake:sdk-3.1-nanoserver-2009            | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-2009      |
-| cakebuild/cake:sdk-3.1-nanoserver-20H2            | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-20H2      |
-| cakebuild/cake:sdk-3.1-nanoserver-ltsc2022        | mcr.microsoft.com/dotnet/sdk:3.1-nanoserver-ltsc2022  |
-| cakebuild/cake:sdk-5.0-nanoserver-1809            | mcr.microsoft.com/dotnet/sdk:5.0-nanoserver-1809      |
-| cakebuild/cake:sdk-5.0-nanoserver-1909            | mcr.microsoft.com/dotnet/sdk:5.0-nanoserver-1909      |
-| cakebuild/cake:sdk-5.0-nanoserver-2004            | mcr.microsoft.com/dotnet/sdk:5.0-nanoserver-2004      |
-| cakebuild/cake:sdk-5.0-nanoserver-2009            | mcr.microsoft.com/dotnet/sdk:5.0-nanoserver-2009      |
-| cakebuild/cake:sdk-5.0-nanoserver-20H2            | mcr.microsoft.com/dotnet/sdk:5.0-nanoserver-20H2      |
-| cakebuild/cake:sdk-5.0-nanoserver-ltsc2022        | mcr.microsoft.com/dotnet/sdk:5.0-nanoserver-ltsc2022  |
-| cakebuild/cake:sdk-6.0-nanoserver-1809            | mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-1809      |
-| cakebuild/cake:sdk-6.0-nanoserver-2004            | mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-2004      |
-| cakebuild/cake:sdk-6.0-nanoserver-20H2            | mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-20H2      |
-| cakebuild/cake:sdk-6.0-nanoserver-ltsc2022        | mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-ltsc2022  |
-| cakebuild/cake:sdk-6.0-windowsservercore-ltsc2022 | mcr.microsoft.com/dotnet/sdk:60-windowsservercore-ltsc2022 |
+| Image                                                   | Based on                                                        |
+|---------------------------------------------------------|-----------------------------------------------------------------|
+|  cakebuild/cakesdk:6.0-nanoserver-1809                  |  mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-1809               |
+|  cakebuild/cakesdk:6.0-nanoserver-20H2                  |  mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-20H2               |
+|  cakebuild/cakesdk:6.0-nanoserver-ltsc2022              |  mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-ltsc2022           |
+|  cakebuild/cakesdk:6.0-windowsservercore-ltsc2019       |  mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2019    |
+|  cakebuild/cakesdk:6.0-windowsservercore-ltsc2022       |  mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2022    |
+|  cakebuild/cakesdk:7.0-nanoserver-1809                  |  mcr.microsoft.com/dotnet/sdk:7.0-nanoserver-1809               |
+|  cakebuild/cakesdk:7.0-nanoserver-ltsc2022              |  mcr.microsoft.com/dotnet/sdk:7.0-nanoserver-ltsc2022           |
+|  cakebuild/cakesdk:7.0-windowsservercore-ltsc2019       |  mcr.microsoft.com/dotnet/sdk:7.0-windowsservercore-ltsc2019    |
+|  cakebuild/cakesdk:7.0-windowsservercore-ltsc2022       |  mcr.microsoft.com/dotnet/sdk:7.0-windowsservercore-ltsc2022    |
+|  cakebuild/cakesdk:8.0-nanoserver-1809                  |  mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809               |
+|  cakebuild/cakesdk:8.0-nanoserver-ltsc2022              |  mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022           |
+|  cakebuild/cakesdk:8.0-windowsservercore-ltsc2019       |  mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2019    |
+|  cakebuild/cakesdk:8.0-windowsservercore-ltsc2022       |  mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2022    |
 
 ## Example usage
 
 ### Interactive container
 
 ```bash
-docker run --rm -it cakebuild/cake:sdk-6.0 cake --version
+docker run --rm -it cakebuild/cake:sdk-8.0 cake --version
 ```
 
 ### Use as builder image
 
 ```Dockerfile
-FROM cakebuild/cake:sdk-6.0-v1.3.0 AS builder
+FROM cakebuild/cake:sdk-8.0-alpine-v4.0.0 AS builder
 
 ADD .  /src
 
 RUN Cake /src/build.cake --Target=Publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 WORKDIR app
 
